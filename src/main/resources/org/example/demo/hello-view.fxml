@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.demo.AppController">
+  <children>
+    <AnchorPane fx:id="pageGestionnaireArticle" layoutY="100.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1000.0" visible="false">
+      <children>
+        <Button layoutX="30.0" layoutY="329.0" mnemonicParsing="false" onAction="#ajouterArticle" text="Ajouter" />
+        <Button layoutX="105.0" layoutY="329.0" mnemonicParsing="false" onAction="#supprimerArticle" prefHeight="26.0" prefWidth="75.0" text="Supprimer" />
+        <Button layoutX="30.0" layoutY="374.0" mnemonicParsing="false" onAction="#modifierArticle" text="Modifier" />
+        <TextField fx:id="nomArticle" layoutX="30.0" layoutY="72.0" promptText="nom article" />
+        <TextField fx:id="qteArticle" layoutX="30.0" layoutY="117.0" promptText="qte article" />
+        <TextField fx:id="qteMinArticle" layoutX="30.0" layoutY="158.0" promptText="qteMin article" />
+        <ComboBox fx:id="categorieArticle" layoutX="30.0" layoutY="200.0" prefWidth="150.0" promptText="categorie" />
+        <ComboBox fx:id="localArticle" layoutX="30.0" layoutY="246.0" prefWidth="150.0" promptText="local" />
+        <DatePicker fx:id="dateArticle" layoutX="30.0" layoutY="282.0" promptText="date peremtion" />
+        <TableView fx:id="tableArticle" layoutX="279.0" layoutY="67.0" onMouseClicked="#handleSelection1" prefHeight="290.0" prefWidth="707.0">
+          <columns>
+            <TableColumn fx:id="tableArticle_ref" prefWidth="75.0" text="reference" />
+            <TableColumn fx:id="tableArticle_nom" prefWidth="150.4000244140625" text="nom" />
+            <TableColumn fx:id="tableArticle_categorie" minWidth="9.5999755859375" prefWidth="127.199951171875" text="categorie" />
+            <TableColumn fx:id="tableArticle_qte" minWidth="0.0" prefWidth="80.800048828125" text="qte" />
+            <TableColumn fx:id="tableArticle_local" prefWidth="108.79998779296875" text="local" />
+            <TableColumn fx:id="tableArticle_qteMin" prefWidth="69.5999755859375" text="qteMin" />
+            <TableColumn fx:id="tableArticle_date" prefWidth="96.0" text="date" />
+          </columns>
+        </TableView>
+        <TextField fx:id="rechercheArticleRef" layoutX="341.0" layoutY="24.0" onKeyTyped="#rechercherArticleParRef" promptText="selon reference" />
+        <Label layoutX="279.0" layoutY="28.0" text="Recherche" />
+        <TableView layoutX="796.0" layoutY="399.0" prefHeight="186.0" prefWidth="150.0">
+          <columns>
+            <TableColumn prefWidth="75.0" text="C1" />
+            <TableColumn prefWidth="75.0" text="C2" />
+          </columns>
+        </TableView>
+        <Label layoutX="757.0" layoutY="369.0" text="les article en alerte avan date de peremtion" />
+        <Button layoutX="110.0" layoutY="374.0" mnemonicParsing="false" onAction="#rechercherArticle" text="Rechercher" />
+        <Button layoutX="215.0" layoutY="282.0" mnemonicParsing="false" onAction="#viderDate" text="Vider" />
+        <Button layoutX="72.0" layoutY="425.0" mnemonicParsing="false" onAction="#resetArticle" text="Reset" />
+      </children>
+    </AnchorPane>
+    <Pane prefHeight="100.0" prefWidth="1000.0">
+      <children>
+        <Button fx:id="btnGestionnaireArticle" layoutX="14.0" layoutY="38.0" mnemonicParsing="false" onAction="#switchPage" text="gestion des articles" />
+        <Button fx:id="btnGestionnaireLocal" layoutX="131.0" layoutY="38.0" mnemonicParsing="false" onAction="#switchPage" text="gestion des locaux" />
+        <Button fx:id="btnGestionnaireFournisseur" layoutX="245.0" layoutY="38.0" mnemonicParsing="false" onAction="#switchPage" text="gestion des fournisseurs" />
+        <Button fx:id="btngS" layoutX="389.0" layoutY="38.0" mnemonicParsing="false" onAction="#switchPage" text="gestion des Services" />
+      </children>
+    </Pane>
+    <AnchorPane fx:id="pageGestionnaireLocal" layoutY="100.0" prefHeight="600.0" prefWidth="1000.0" visible="false">
+      <children>
+        <TextField fx:id="nomLocal" layoutX="87.0" layoutY="91.0" />
+        <ComboBox fx:id="typeLocal" layoutX="87.0" layoutY="125.0" prefWidth="150.0" />
+        <Label layoutX="36.0" layoutY="95.0" text="Nom:" />
+        <Label layoutX="36.0" layoutY="129.0" text="Types:" />
+        <Button layoutX="87.0" layoutY="357.0" mnemonicParsing="false" onAction="#ajouterLocal" text="Ajouter" />
+        <Button layoutX="193.0" layoutY="357.0" mnemonicParsing="false" onAction="#modifierLocal" text="Modifier" />
+        <Button layoutX="87.0" layoutY="422.0" mnemonicParsing="false" onAction="#supprimerLocal" text="Supprimer" />
+        <Button layoutX="193.0" layoutY="422.0" mnemonicParsing="false" onAction="#rechercherLocal" text="Rechercher" />
+        <Button layoutX="158.0" layoutY="488.0" mnemonicParsing="false" onAction="#resetLocal" text="Réinitialiser" />
+        <Label layoutX="514.0" layoutY="58.0" text="Rechercher" />
+        <TextField fx:id="rechercheParIdLocal" layoutX="596.0" layoutY="54.0" onKeyTyped="#rechercherLocalParId" />
+        <TableView fx:id="tableLocal" layoutX="491.0" layoutY="96.0" onMouseClicked="#handleSelection2" prefHeight="487.0" prefWidth="322.0">
+          <columns>
+            <TableColumn fx:id="identifiantLocal" prefWidth="104.79998779296875" text="Identifiant" />
+            <TableColumn fx:id="NomLocal" prefWidth="109.60003662109375" text="Nom" />
+            <TableColumn fx:id="TypeLocal" prefWidth="106.39999999999998" text="Type" />
+          </columns>
+        </TableView>
+      </children>
+    </AnchorPane>
+    <AnchorPane fx:id="pageGestionnaireFournisseur" layoutY="107.0" prefHeight="600.0" prefWidth="1000.0">
+      <children>
+        <TextField fx:id="nomFournisseur" layoutX="103.0" layoutY="91.0" />
+        <TextField fx:id="adresseFournisseur" layoutX="104.0" layoutY="134.0" />
+        <TextField fx:id="contactFournisseur" layoutX="103.0" layoutY="179.0" />
+        <Label layoutX="44.0" layoutY="95.0" text="Nom:" />
+        <Label layoutX="44.0" layoutY="138.0" text="Adresse" />
+        <Label layoutX="44.0" layoutY="183.0" text="Contact:" />
+        <Button layoutX="220.0" layoutY="316.0" mnemonicParsing="false" onAction="#ajouterFournisseur" text="Ajouter" />
+        <Button layoutX="217.0" layoutY="265.0" mnemonicParsing="false" onAction="#modifierFournisseur" text="Modifier" />
+        <Button layoutX="113.0" layoutY="316.0" mnemonicParsing="false" onAction="#supprimerFournisseur" text="Supprimer" />
+        <Button layoutX="111.0" layoutY="265.0" mnemonicParsing="false" onAction="#rechercherFournisseur" text="Rechercher" />
+        <Button layoutX="178.0" layoutY="356.0" mnemonicParsing="false" onAction="#resetFournisseur" text="Rénitialiser" />
+        <TextField fx:id="rechercherFournisseur" layoutX="426.0" layoutY="45.0" onKeyTyped="#rechercherFournisseurParRef" />
+        <Label layoutX="345.0" layoutY="49.0" text="Rechercher" />
+        <TableView fx:id="tableFournisseur" layoutX="328.0" layoutY="89.0" onMouseClicked="#handleSelection3" prefHeight="478.0" prefWidth="403.0">
+          <columns>
+            <TableColumn fx:id="IdFournisseur" prefWidth="107.19998168945312" text="Identifiant" />
+            <TableColumn fx:id="NomFournisseur" prefWidth="96.0" text="Nom" />
+            <TableColumn fx:id="AdresseFournisseur" prefWidth="94.4000244140625" text="Adresse" />
+            <TableColumn fx:id="ContactFournisseur" prefWidth="103.99998779296874" text="Contact" />
+          </columns>
+        </TableView>
+      </children>
+    </AnchorPane>
+    <AnchorPane fx:id="panedeService" layoutY="93.0" prefHeight="607.0" prefWidth="1000.0" visible="false">
+      <children>
+        <Label layoutX="81.0" layoutY="63.0" text="Nom:" />
+        <Label layoutX="47.0" layoutY="150.0" text="Responsable:" />
+        <Label layoutX="82.0" layoutY="108.0" text="Type:" />
+        <TextField fx:id="nomService" layoutX="129.0" layoutY="59.0" />
+        <TextField fx:id="responsableService" layoutX="130.0" layoutY="146.0" />
+        <TextField fx:id="contactService" layoutX="129.0" layoutY="187.0" />
+        <Label layoutX="74.0" layoutY="191.0" text="Contact:" />
+        <ComboBox fx:id="typeService" layoutX="130.0" layoutY="104.0" prefWidth="150.0" />
+        <Button layoutX="70.0" layoutY="311.0" mnemonicParsing="false" onAction="#ajouterService" text="Ajouter" />
+        <Button layoutX="70.0" layoutY="389.0" mnemonicParsing="false" onAction="#supprimerService" text="Supprimer" />
+        <Button layoutX="153.0" layoutY="311.0" mnemonicParsing="false" onAction="#modifierService" text="Modifier" />
+        <Button layoutX="153.0" layoutY="389.0" mnemonicParsing="false" onAction="#rechercherService" text="Rechercher" />
+        <Button layoutX="111.0" layoutY="464.0" mnemonicParsing="false" onAction="#resetService" text="Réinitialiser" />
+        <Label layoutX="514.0" layoutY="51.0" text="Rechercher:" />
+        <TextField fx:id="rechercherSPI" layoutX="593.0" layoutY="46.0" onKeyTyped="#rechercherServiceParID" />
+        <TableView fx:id="tableService" layoutX="406.0" layoutY="104.0" onMouseClicked="#handleSelection4" prefHeight="478.0" prefWidth="579.0">
+          <columns>
+            <TableColumn fx:id="IDService" prefWidth="118.39996337890625" text="Identifiant" />
+            <TableColumn fx:id="NomService" prefWidth="104.00006103515625" text="Nom" />
+            <TableColumn fx:id="TypeService" prefWidth="123.20001220703125" text="Type" />
+            <TableColumn fx:id="ResponsableService" prefWidth="115.199951171875" text="Responsable" />
+            <TableColumn fx:id="ContactService" prefWidth="115.199951171875" text="Contact" />
+          </columns>
+        </TableView>
+      </children>
+    </AnchorPane>
+  </children>
+</Pane>
