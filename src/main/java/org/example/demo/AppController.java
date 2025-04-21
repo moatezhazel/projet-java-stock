@@ -3,9 +3,18 @@ import javafx.event.ActionEvent;
 import java.net.ConnectException;
 import java.net.URL;
 import java.sql.*;
+import java.sql.Date;
 import java.time.LocalDate;
-import java.util.ResourceBundle;
+import java.util.*;
+
 import javafx.scene.input.KeyEvent;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.ListCell;
+import javafx.util.StringConverter;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 
 import javafx.collections.FXCollections;
@@ -18,22 +27,97 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 
 public class AppController implements Initializable {
-    // Références FXML pour les commandes
-    @FXML private TableView<CommandeExterne> tableCommandesExternes;
-    @FXML private TableView<CommandeInterne> tableCommandesInternes;
-    @FXML private TableColumn<CommandeExterne, Integer> colCmdExtId;
-    @FXML private TableColumn<CommandeExterne, String> colCmdExtFournisseur;
-    @FXML private TableColumn<CommandeExterne, LocalDate> colCmdExtDate;
-    @FXML private TableColumn<CommandeExterne, String> colCmdExtStatut;
-    @FXML private TableColumn<CommandeInterne, Integer> colCmdIntId;
-    @FXML private TableColumn<CommandeInterne, String> colCmdIntService;
-    @FXML private TableColumn<CommandeInterne, LocalDate> colCmdIntDate;
-    @FXML private TableColumn<CommandeInterne, String> colCmdIntStatut;
+    @FXML
+    private AnchorPane pageCommandeExterne;
+    @FXML
+    private AnchorPane pageCommandeInterne;
+    // For command management
+    //private CommandeExterne selectedCommandeExterne;
+    private CommandeInterne selectedCommandeInterne;
+    private ObservableList<CommandeExterne> commandesExternesList = FXCollections.observableArrayList();
+    private ObservableList<CommandeInterne> commandesInternesList = FXCollections.observableArrayList();
+    private ObservableList<LigneCommandeExterne> lignesCommandeExterneList = FXCollections.observableArrayList();
+    private ObservableList<LigneCommandeInterne> lignesCommandeInterneList = FXCollections.observableArrayList();
+    //ffff
+    @FXML
+    private TableView<CommandeExterne> tableCommandeExterne;
+    @FXML
+    private TableColumn<CommandeExterne, Integer> colIdCommandeExterne;
+    @FXML
+    private TableColumn<CommandeExterne, String> colFournisseurCommandeExterne;
+    @FXML
+    private TableColumn<CommandeExterne, LocalDate> colDateCommandeExterne;
+    @FXML
+    private TableColumn<CommandeExterne, String> colStatutCommandeExterne;
+    @FXML
+    private TableColumn<CommandeExterne, String> colDescriptionCommandeExterne;
 
-    // Données
-    private ObservableList<CommandeExterne> commandesExternes = FXCollections.observableArrayList();
-    private ObservableList<CommandeInterne> commandesInternes = FXCollections.observableArrayList();
-    //lmm//
+    @FXML
+    private ComboBox<Fournisseur> comboFournisseurCommandeExterne;
+    @FXML
+    private DatePicker dateDateCommandeExterne;
+    @FXML
+    private TextArea txtDescriptionCommandeExterne;
+
+    @FXML
+    private TableView<LigneCommandeExterne> tableLignesCommandeExterne;
+    @FXML
+    private TableColumn<LigneCommandeExterne, Integer> colRefArticleCommandeExterne;
+    @FXML
+    private TableColumn<LigneCommandeExterne, String> colNomArticleCommandeExterne;
+    @FXML
+    private TableColumn<LigneCommandeExterne, Integer> colQuantiteCommandeExterne;
+    @FXML
+    private TableColumn<LigneCommandeExterne, String> colLocalCommandeExterne;
+
+    @FXML
+    private ComboBox<Article> comboArticleCommandeExterne;
+    @FXML
+    private ComboBox<Local> comboLocalCommandeExterne;
+    @FXML
+    private TextField txtQuantiteCommandeExterne;
+    // Section Gestion des commandes internes
+    @FXML
+    private TableView<CommandeInterne> tableCommandeInterne;
+    @FXML
+    private TableColumn<CommandeInterne, Integer> colIdCommandeInterne;
+    @FXML
+    private TableColumn<CommandeInterne, String> colServiceCommandeInterne;
+    @FXML
+    private TableColumn<CommandeInterne, LocalDate> colDateCommandeInterne;
+    @FXML
+    private TableColumn<CommandeInterne, String> colStatutCommandeInterne;
+    @FXML
+    private TableColumn<CommandeInterne, String> colDescriptionCommandeInterne;
+
+    @FXML
+    private ComboBox<Service> comboServiceCommandeInterne;
+    @FXML
+    private DatePicker dateDateCommandeInterne;
+    @FXML
+    private TextArea txtDescriptionCommandeInterne;
+
+    @FXML
+    private TableView<LigneCommandeInterne> tableLignesCommandeInterne;
+    @FXML
+    private TableColumn<LigneCommandeInterne, Integer> colRefArticleCommandeInterne;
+    @FXML
+    private TableColumn<LigneCommandeInterne, String> colNomArticleCommandeInterne;
+    @FXML
+    private TableColumn<LigneCommandeInterne, Integer> colQuantiteCommandeInterne;
+    @FXML
+    private TableColumn<LigneCommandeInterne, String> colLocalCommandeInterne;
+
+    @FXML
+    private ComboBox<Article> comboArticleCommandeInterne;
+    @FXML
+    private ComboBox<Local> comboLocalCommandeInterne;
+    @FXML
+    private TextField txtQuantiteCommandeInterne;
+
+
+
+    //limite
     @FXML private AnchorPane pageGestionnaireArticle, pageGestionnaireLocal, pageGestionnaireFournisseur,panedeService;
     @FXML private Button btnGestionnaireArticle, btnGestionnaireLocal, btnGestionnaireFournisseur,btngS;
     @FXML private TextField rechercheArticleRef;
@@ -75,6 +159,11 @@ public class AppController implements Initializable {
     @FXML
     private TextField contactFournisseur;
 
+    @FXML
+    private Button btnCommandeExterne;
+
+    @FXML
+    private Button btnCommandeInterne;
 
 
     @FXML
@@ -118,34 +207,407 @@ public class AppController implements Initializable {
     @FXML private TableColumn<Article, String> tableArticle_local;
     @FXML private TableColumn<Article, Integer> tableArticle_qteMin;
     @FXML private TableColumn<Article, LocalDate> tableArticle_date;
+    //mmmmm
+    private void initCommandeInterneView() {
+        // Initialiser les colonnes du tableau des commandes internes
+        colIdCommandeInterne.setCellValueFactory(new PropertyValueFactory<>("idCommande"));
+        colServiceCommandeInterne.setCellValueFactory(new PropertyValueFactory<>("nomService"));
+        colDateCommandeInterne.setCellValueFactory(new PropertyValueFactory<>("dateCommande"));
+        colStatutCommandeInterne.setCellValueFactory(new PropertyValueFactory<>("statut"));
+        colDescriptionCommandeInterne.setCellValueFactory(new PropertyValueFactory<>("description"));
+
+        // Initialiser les colonnes du tableau des lignes de commande interne
+        colRefArticleCommandeInterne.setCellValueFactory(new PropertyValueFactory<>("refArticle"));
+        colNomArticleCommandeInterne.setCellValueFactory(new PropertyValueFactory<>("nomArticle"));
+        colQuantiteCommandeInterne.setCellValueFactory(new PropertyValueFactory<>("quantite"));
+        colLocalCommandeInterne.setCellValueFactory(new PropertyValueFactory<>("localSource"));
+
+        // Charger les services dans le combobox
+        loadServicesIntoComboBox();
+
+        // Charger les articles dans le combobox
+        loadArticlesIntoComboBox();
+
+        // Charger les locaux dans le combobox
+        loadLocauxIntoComboBox();
+
+        // Définir la date actuelle par défaut
+        dateDateCommandeInterne.setValue(LocalDate.now());
+
+        // Charger toutes les commandes internes
+        loadCommandesInternes();
+
+        // Ajouter un listener pour la sélection d'une commande
+        tableCommandeInterne.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                selectedCommandeInterne = newSelection;
+                loadLignesCommandeInterne(selectedCommandeInterne.getIdCommande());
+            }
+        });
+    }
+    //mmmmmm
+    
 
 
 
     @FXML
-    private void switchPage(Event event) {
-        if(event.getSource() == btnGestionnaireArticle) {
-            pageGestionnaireArticle.setVisible(true);
-            pageGestionnaireFournisseur.setVisible(false);
-            pageGestionnaireLocal.setVisible(false);
-            panedeService.setVisible(false);
-        } else if(event.getSource() == btnGestionnaireLocal) {
-            pageGestionnaireArticle.setVisible(false);
-            pageGestionnaireFournisseur.setVisible(false);
-            pageGestionnaireLocal.setVisible(true);
-            panedeService.setVisible(false);
-        }
-        else if(event.getSource() == btngS) {
-            pageGestionnaireArticle.setVisible(false);
-            pageGestionnaireFournisseur.setVisible(false);
-            pageGestionnaireLocal.setVisible(false);
-            panedeService.setVisible(true);
-        }else {
-            pageGestionnaireArticle.setVisible(false);
-            pageGestionnaireFournisseur.setVisible(true);
-            pageGestionnaireLocal.setVisible(false);
-            panedeService.setVisible(false);
+    private void switchPage(ActionEvent event) {
+        Button clickedButton = (Button) event.getSource();
+
+        // Liste de toutes les pages avec leur bouton correspondant
+        Map<Button, AnchorPane> pageMap = Map.of(
+                btnGestionnaireArticle, pageGestionnaireArticle,
+                btnGestionnaireLocal, pageGestionnaireLocal,
+                btnGestionnaireFournisseur, pageGestionnaireFournisseur,
+                btngS, panedeService,  // Note: btngS correspond à votre bouton Service
+                btnCommandeExterne, pageCommandeExterne,
+                btnCommandeInterne, pageCommandeInterne
+        );
+
+        // Cacher toutes les pages
+        pageMap.values().forEach(page -> page.setVisible(false));
+
+        // Afficher la page sélectionnée
+        AnchorPane selectedPage = pageMap.get(clickedButton);
+        if (selectedPage != null) {
+            selectedPage.setVisible(true);
+
+            // Chargements spécifiques pour les commandes
+            if (clickedButton == btnCommandeExterne) {
+                loadCommandesExternes();
+            } else if (clickedButton == btnCommandeInterne) {
+                loadCommandesInternes();
+            }
         }
     }
+    private void loadCommandesInternes() {
+        try {
+            String sql = "SELECT ci.*, s.nom AS nom_service FROM commande_interne ci " +
+                    "JOIN service s ON ci.id_service = s.id " +
+                    "ORDER BY ci.date_commande DESC";
+
+            Connection conn = DB.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            ObservableList<CommandeInterne> commandesList = FXCollections.observableArrayList();
+
+            while (rs.next()) {
+                CommandeInterne commande = new CommandeInterne(
+                        rs.getInt("id_commande"),
+                        rs.getInt("id_service"),
+                        rs.getString("nom_service"),
+                        rs.getDate("date_commande").toLocalDate(),
+                        rs.getString("statut"),
+                        rs.getString("description")
+                );
+                commandesList.add(commande);
+            }
+
+            tableCommandeInterne.setItems(commandesList);
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des commandes internes: " + e.getMessage());
+        }
+    }
+    @FXML
+    private void createCommandeInterne() {
+        try {
+            // Vérifier les entrées obligatoires
+            if (comboServiceCommandeInterne.getValue() == null || dateDateCommandeInterne.getValue() == null) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "Veuillez sélectionner un service et une date.");
+                return;
+            }
+
+            // Créer la commande interne
+            String sql = "INSERT INTO commande_interne (id_service, date_commande, statut, description) " +
+                    "VALUES (?, ?, ?, ?)";
+
+            Connection conn = DB.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+            pstmt.setInt(1, comboServiceCommandeInterne.getValue().getIdservice());
+            pstmt.setDate(2, Date.valueOf(dateDateCommandeInterne.getValue()));
+            pstmt.setString(3, "En attente"); // Statut par défaut
+            pstmt.setString(4, txtDescriptionCommandeInterne.getText());
+
+            int affectedRows = pstmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                // Récupérer l'ID généré
+                ResultSet rs = pstmt.getGeneratedKeys();
+                if (rs.next()) {
+                    int generatedId = rs.getInt(1);
+
+                    showMsg(Alert.AlertType.INFORMATION, "Succès", "Commande interne créée avec succès. ID: " + generatedId);
+
+                    // Réinitialiser les champs
+                    comboServiceCommandeInterne.setValue(null);
+                    dateDateCommandeInterne.setValue(LocalDate.now());
+                    txtDescriptionCommandeInterne.clear();
+
+                    // Recharger les commandes
+                    loadCommandesInternes();
+                }
+                rs.close();
+            }
+
+            pstmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la création de la commande: " + e.getMessage());
+        }
+    }
+    @FXML
+    private void addLigneCommandeInterne() {
+        try {
+            // Vérifier qu'une commande est sélectionnée
+            if (selectedCommandeInterne == null) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "Veuillez sélectionner une commande interne.");
+                return;
+            }
+
+            // Vérifier que la commande n'est pas déjà validée
+            if ("Validée".equals(selectedCommandeInterne.getStatut())) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "Impossible de modifier une commande validée.");
+                return;
+            }
+
+            // Vérifier les entrées obligatoires
+            if (comboArticleCommandeInterne.getValue() == null ||
+                    comboLocalCommandeInterne.getValue() == null ||
+                    txtQuantiteCommandeInterne.getText().isEmpty()) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "Veuillez remplir tous les champs.");
+                return;
+            }
+
+            // Vérifier que la quantité est un nombre positif
+            int quantite;
+            try {
+                quantite = Integer.parseInt(txtQuantiteCommandeInterne.getText());
+                if (quantite <= 0) {
+                    throw new NumberFormatException();
+                }
+            } catch (NumberFormatException e) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "La quantité doit être un nombre entier positif.");
+                return;
+            }
+
+            // Ajouter la ligne de commande
+            String sql = "INSERT INTO ligne_commande_interne (id_commande, ref_article, quantite, local_source) " +
+                    "VALUES (?, ?, ?, ?)";
+
+            Connection conn = DB.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+
+            pstmt.setInt(1, selectedCommandeInterne.getIdCommande());
+            pstmt.setInt(2, comboArticleCommandeInterne.getValue().getRef());
+            pstmt.setInt(3, quantite);
+            pstmt.setString(4, comboLocalCommandeInterne.getValue().getNom());
+
+            int affectedRows = pstmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                showMsg(Alert.AlertType.INFORMATION, "Succès", "Ligne de commande ajoutée avec succès.");
+
+                // Réinitialiser les champs
+                comboArticleCommandeInterne.setValue(null);
+                comboLocalCommandeInterne.setValue(null);
+                txtQuantiteCommandeInterne.clear();
+
+                // Recharger les lignes de commande
+                loadLignesCommandeInterne(selectedCommandeInterne.getIdCommande());
+            }
+
+
+            pstmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors de l'ajout de la ligne: " + e.getMessage());
+        }
+    }
+    private void loadLignesCommandeInterne(int idCommande) {
+        try {
+            // Requête SQL pour récupérer les lignes de commande avec les noms d'articles
+            String sql = "SELECT lci.*, a.nom AS nom_article FROM ligne_commande_interne lci " +
+                    "JOIN article a ON lci.ref_article = a.reference " +
+                    "WHERE lci.id_commande = ?";
+
+            Connection conn = DB.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, idCommande);
+            ResultSet rs = pstmt.executeQuery();
+
+            ObservableList<LigneCommandeInterne> lignesList = FXCollections.observableArrayList();
+
+            while (rs.next()) {
+                LigneCommandeInterne ligne = new LigneCommandeInterne(
+                        rs.getInt("id_ligne"),
+                        rs.getInt("id_commande"),
+                        rs.getInt("ref_article"),
+                        rs.getString("nom_article"),
+                        rs.getInt("quantite"),
+                        rs.getString("local_source")
+                );
+                lignesList.add(ligne);
+            }
+
+            // Mettre à jour la TableView avec les lignes récupérées
+            tableLignesCommandeInterne.setItems(lignesList);
+
+            rs.close();
+            pstmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur",
+                    "Erreur lors du chargement des lignes de commande interne: " + e.getMessage());
+        }
+    }
+    @FXML
+    private void validateCommandeInterne() {
+        try {
+            // Vérifier qu'une commande est sélectionnée
+            if (selectedCommandeInterne == null) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "Veuillez sélectionner une commande interne.");
+                return;
+            }
+
+            // Vérifier que la commande n'est pas déjà validée
+            if ("Validée".equals(selectedCommandeInterne.getStatut())) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "Cette commande a déjà été validée.");
+                return;
+            }
+
+            // Demander confirmation
+            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmAlert.setTitle("Confirmation");
+            confirmAlert.setHeaderText("Valider la commande interne");
+            confirmAlert.setContentText("Êtes-vous sûr de vouloir valider cette commande ? Cette action mettra à jour le stock et ne pourra pas être annulée.");
+
+            Optional<ButtonType> result = confirmAlert.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                Connection conn = null;
+                try {
+                    conn = DB.getConnection();
+                    conn.setAutoCommit(false);
+
+                    // 1. Mettre à jour le statut de la commande
+                    String updateCommandeSql = "UPDATE commande_interne SET statut = 'Validée' WHERE id_commande = ?";
+                    PreparedStatement updateCommandeStmt = conn.prepareStatement(updateCommandeSql);
+                    updateCommandeStmt.setInt(1, selectedCommandeInterne.getIdCommande());
+                    updateCommandeStmt.executeUpdate();
+                    updateCommandeStmt.close();
+
+                    // 2. Récupérer toutes les lignes de la commande (avec ResultSet scrollable)
+                    String getLignesSql = "SELECT * FROM ligne_commande_interne WHERE id_commande = ?";
+                    PreparedStatement getLignesStmt = conn.prepareStatement(
+                            getLignesSql,
+                            ResultSet.TYPE_SCROLL_INSENSITIVE,
+                            ResultSet.CONCUR_READ_ONLY);
+                    getLignesStmt.setInt(1, selectedCommandeInterne.getIdCommande());
+                    ResultSet lignesRs = getLignesStmt.executeQuery();
+
+                    // 3. Vérifier d'abord que tous les articles sont disponibles en stock
+                    String checkStockSql = "SELECT reference, qte FROM article WHERE reference = ?";
+                    PreparedStatement checkStockStmt = conn.prepareStatement(checkStockSql);
+
+                    boolean stockDisponible = true;
+                    List<Integer> articlesInsuffisants = new ArrayList<>();
+
+                    while (lignesRs.next()) {
+                        int refArticle = lignesRs.getInt("ref_article");
+                        int quantite = lignesRs.getInt("quantite");
+
+                        checkStockStmt.setInt(1, refArticle);
+                        ResultSet stockRs = checkStockStmt.executeQuery();
+
+                        if (stockRs.next()) {
+                            int qteDisponible = stockRs.getInt("qte");
+                            if (qteDisponible < quantite) {
+                                stockDisponible = false;
+                                articlesInsuffisants.add(refArticle);
+                            }
+                        }
+                        stockRs.close();
+                    }
+
+                    if (!stockDisponible) {
+                        conn.rollback();
+                        showMsg(Alert.AlertType.ERROR, "Erreur", "Stock insuffisant pour les articles: " + articlesInsuffisants);
+                        return;
+                    }
+
+                    // 4. Si tout est OK, procéder à la mise à jour du stock
+                    lignesRs.beforeFirst(); // Maintenant possible car le ResultSet est scrollable
+
+                    String updateStockSql = "UPDATE article SET qte = qte - ? WHERE reference = ?";
+                    PreparedStatement updateStockStmt = conn.prepareStatement(updateStockSql);
+
+                    String insertMouvementSql = "INSERT INTO mouvement_stock (ref_article, date_mouvement, type_mouvement, quantite, source_destination) VALUES (?, ?, ?, ?, ?)";
+                    PreparedStatement insertMouvementStmt = conn.prepareStatement(insertMouvementSql);
+
+                    while (lignesRs.next()) {
+                        int refArticle = lignesRs.getInt("ref_article");
+                        int quantite = lignesRs.getInt("quantite");
+
+                        // Mettre à jour le stock
+                        updateStockStmt.setInt(1, quantite);
+                        updateStockStmt.setInt(2, refArticle);
+                        updateStockStmt.executeUpdate();
+
+                        // Enregistrer le mouvement
+                        insertMouvementStmt.setInt(1, refArticle);
+                        insertMouvementStmt.setDate(2, Date.valueOf(LocalDate.now()));
+                        insertMouvementStmt.setString(3, "SORTIE");
+                        insertMouvementStmt.setInt(4, quantite);
+                        insertMouvementStmt.setString(5, "Commande interne #" + selectedCommandeInterne.getIdCommande());
+                        insertMouvementStmt.executeUpdate();
+                    }
+
+                    // Fermer toutes les ressources
+                    lignesRs.close();
+                    getLignesStmt.close();
+                    updateStockStmt.close();
+                    insertMouvementStmt.close();
+                    checkStockStmt.close();
+
+                    conn.commit();
+                    showMsg(Alert.AlertType.INFORMATION, "Succès", "La commande a été validée et le stock a été mis à jour.");
+
+                    // Recharger les commandes
+                    loadCommandesInternes();
+                } catch (SQLException e) {
+                    if (conn != null) {
+                        try {
+                            conn.rollback();
+                        } catch (SQLException ex) {
+                            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du rollback: " + ex.getMessage());
+                        }
+                    }
+                    showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la validation: " + e.getMessage());
+                } finally {
+                    if (conn != null) {
+                        try {
+                            conn.setAutoCommit(true);
+                            conn.close();
+                        } catch (SQLException e) {
+
+                            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la fermeture de la connexion: " + e.getMessage());
+                        }
+                    }
+                }
+            }
+
+
+        } catch (Exception e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la validation: " + e.getMessage());
+        }
+    }
+
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -160,8 +622,649 @@ public class AppController implements Initializable {
         loadFournisseurFromDB();
         initialiseTypeService();
         loadServiceFromDB();
+        pageGestionnaireArticle.setVisible(true);
     }
+
     //88//
+    // Variable pour stocker la commande externe sélectionnée
+    private CommandeExterne selectedCommandeExterne;
+
+    // Méthode pour initialiser la vue des commandes externes
+    private void initCommandeExterneView() {
+        // Initialiser les colonnes du tableau des commandes externes
+        colIdCommandeExterne.setCellValueFactory(new PropertyValueFactory<>("idCommande"));
+        colFournisseurCommandeExterne.setCellValueFactory(new PropertyValueFactory<>("nomFournisseur"));
+        colDateCommandeExterne.setCellValueFactory(new PropertyValueFactory<>("dateCommande"));
+        colStatutCommandeExterne.setCellValueFactory(new PropertyValueFactory<>("statut"));
+        colDescriptionCommandeExterne.setCellValueFactory(new PropertyValueFactory<>("description"));
+
+        // Initialiser les colonnes du tableau des lignes de commande externe
+        colRefArticleCommandeExterne.setCellValueFactory(new PropertyValueFactory<>("refArticle"));
+        colNomArticleCommandeExterne.setCellValueFactory(new PropertyValueFactory<>("nomArticle"));
+        colQuantiteCommandeExterne.setCellValueFactory(new PropertyValueFactory<>("quantite"));
+        colLocalCommandeExterne.setCellValueFactory(new PropertyValueFactory<>("localDestination"));
+
+        // Charger les fournisseurs dans le combobox
+        loadFournisseursIntoComboBox();
+
+        // Charger les articles dans le combobox
+        loadArticlesIntoComboBox();
+
+        // Charger les locaux dans le combobox
+        loadLocauxIntoComboBox();
+
+        // Définir la date actuelle par défaut
+        dateDateCommandeExterne.setValue(LocalDate.now());
+
+        // Charger toutes les commandes externes
+        loadCommandesExternes();
+
+        // Ajouter un listener pour la sélection d'une commande
+        tableCommandeExterne.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                selectedCommandeExterne = newSelection;
+                loadLignesCommandeExterne(selectedCommandeExterne.getIdCommande());
+            }
+        });
+    }
+
+    // Méthode pour charger les commandes externes depuis la base de données
+    private void loadCommandesExternes() {
+        try {
+            String sql = "SELECT ce.*, f.nom AS nom_fournisseur FROM commande_externe ce " +
+                    "JOIN fournisseur f ON ce.id_fournisseur = f.id_fournisseur " +
+                    "ORDER BY ce.date_commande DESC";
+
+            Connection conn = DB.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            ObservableList<CommandeExterne> commandesList = FXCollections.observableArrayList();
+
+            while (rs.next()) {
+                CommandeExterne commande = new CommandeExterne(
+                        rs.getInt("id_commande"),
+                        rs.getInt("id_fournisseur"),
+                        rs.getString("nom_fournisseur"),
+                        rs.getDate("date_commande").toLocalDate(),
+                        rs.getString("statut"),
+                        rs.getString("description")
+                );
+                commandesList.add(commande);
+            }
+
+            tableCommandeExterne.setItems(commandesList);
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des commandes externes: " + e.getMessage());
+        }
+    }
+
+    // Méthode pour charger les lignes d'une commande externe spécifique
+    private void loadLignesCommandeExterne(int idCommande) {
+        try {
+            String sql = "SELECT lce.*, a.nom AS nom_article FROM ligne_commande_externe lce " +
+                    "JOIN article a ON lce.ref_article = a.reference " +
+                    "WHERE lce.id_commande = ?";
+
+            Connection conn = DB.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, idCommande);
+            ResultSet rs = pstmt.executeQuery();
+
+            ObservableList<LigneCommandeExterne> lignesList = FXCollections.observableArrayList();
+
+            while (rs.next()) {
+                LigneCommandeExterne ligne = new LigneCommandeExterne(
+                        rs.getInt("id_ligne"),
+                        rs.getInt("id_commande"),
+                        rs.getInt("ref_article"),
+                        rs.getString("nom_article"),
+                        rs.getInt("quantite"),
+                        rs.getString("local_destination")
+                );
+                lignesList.add(ligne);
+            }
+
+            tableLignesCommandeExterne.setItems(lignesList);
+
+            rs.close();
+            pstmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des lignes de commande: " + e.getMessage());
+        }
+    }
+
+    // Méthode pour créer une nouvelle commande externe
+    @FXML
+    private void createCommandeExterne() {
+        try {
+            // Vérifier les entrées
+            if (comboFournisseurCommandeExterne.getValue() == null || dateDateCommandeExterne.getValue() == null) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "Veuillez sélectionner un fournisseur et une date.");
+                return;
+            }
+
+            // Créer la commande
+            String sql = "INSERT INTO commande_externe (id_fournisseur, date_commande, statut, description) " +
+                    "VALUES (?, ?, ?, ?)";
+
+            Connection conn = DB.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+            pstmt.setInt(1, comboFournisseurCommandeExterne.getValue().getId_fournisseur());
+            pstmt.setDate(2, Date.valueOf(dateDateCommandeExterne.getValue()));
+            pstmt.setString(3, "En attente");
+            pstmt.setString(4, txtDescriptionCommandeExterne.getText());
+
+            int affectedRows = pstmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                // Récupérer l'ID généré
+                ResultSet rs = pstmt.getGeneratedKeys();
+                if (rs.next()) {
+                    int generatedId = rs.getInt(1);
+
+                    showMsg(Alert.AlertType.INFORMATION, "Succès", "Commande externe créée avec succès. ID: " + generatedId);
+
+                    // Réinitialiser les champs
+                    comboFournisseurCommandeExterne.setValue(null);
+                    dateDateCommandeExterne.setValue(LocalDate.now());
+                    txtDescriptionCommandeExterne.clear();
+
+                    // Recharger les commandes
+                    loadCommandesExternes();
+                }
+                rs.close();
+            }
+
+            pstmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la création de la commande: " + e.getMessage());
+        }
+    }
+
+    // Méthode pour ajouter une ligne à la commande externe sélectionnée
+    @FXML
+    private void addLigneCommandeExterne() {
+        try {
+            // Vérifier qu'une commande est sélectionnée
+            if (selectedCommandeExterne == null) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "Veuillez sélectionner une commande externe.");
+                return;
+            }
+
+            // Vérifier que la commande n'est pas déjà validée
+            if ("Validée".equals(selectedCommandeExterne.getStatut())) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "Impossible de modifier une commande validée.");
+                return;
+            }
+
+            // Vérifier les entrées
+            if (comboArticleCommandeExterne.getValue() == null ||
+                    comboLocalCommandeExterne.getValue() == null ||
+                    txtQuantiteCommandeExterne.getText().isEmpty()) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "Veuillez remplir tous les champs.");
+                return;
+            }
+
+            // Vérifier que la quantité est un nombre positif
+            int quantite;
+            try {
+                quantite = Integer.parseInt(txtQuantiteCommandeExterne.getText());
+                if (quantite <= 0) {
+                    throw new NumberFormatException();
+                }
+            } catch (NumberFormatException e) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "La quantité doit être un nombre entier positif.");
+                return;
+            }
+
+            // Ajouter la ligne de commande
+            String sql = "INSERT INTO ligne_commande_externe (id_commande, ref_article, quantite, " +
+                    "local_destination) " +
+                    "VALUES (?, ?, ?, ?)";
+
+            Connection conn = DB.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+
+            pstmt.setInt(1, selectedCommandeExterne.getIdCommande());
+            pstmt.setInt(2, comboArticleCommandeExterne.getValue().getRef());
+            pstmt.setInt(3, quantite);
+            pstmt.setString(4, comboLocalCommandeExterne.getValue().getNom());
+
+            int affectedRows = pstmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                showMsg(Alert.AlertType.INFORMATION, "Succès", "Ligne de commande ajoutée avec succès.");
+
+                // Réinitialiser les champs
+                comboArticleCommandeExterne.setValue(null);
+                comboLocalCommandeExterne.setValue(null);
+                txtQuantiteCommandeExterne.clear();
+
+                // Recharger les lignes de commande
+                loadLignesCommandeExterne(selectedCommandeExterne.getIdCommande());
+            }
+
+            pstmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors de l'ajout de la ligne: " + e.getMessage());
+        }
+    }
+    //55
+
+    //55
+
+    // Méthode pour valider une commande externe et mettre à jour le stock
+    @FXML
+    private void validateCommandeExterne() {
+        try {
+            // Vérifier qu'une commande est sélectionnée
+            if (selectedCommandeExterne == null) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "Veuillez sélectionner une commande externe.");
+                return;
+            }
+
+            // Vérifier que la commande n'est pas déjà validée
+            if ("Validée".equals(selectedCommandeExterne.getStatut())) {
+                showMsg(Alert.AlertType.WARNING, "Validation", "Cette commande a déjà été validée.");
+                return;
+            }
+
+            // Demander confirmation
+            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmAlert.setTitle("Confirmation");
+            confirmAlert.setHeaderText("Valider la commande externe");
+            confirmAlert.setContentText("Êtes-vous sûr de vouloir valider cette commande ? Cette action mettra à jour le stock et ne pourra pas être annulée.");
+
+            Optional<ButtonType> result = confirmAlert.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                Connection conn = null;
+                try {
+                    conn = DB.getConnection();
+                    conn.setAutoCommit(false);
+
+                    // Mettre à jour le statut de la commande
+                    String updateCommandeSql = "UPDATE commande_externe SET statut = 'Validée' WHERE id_commande = ?";
+                    PreparedStatement updateCommandeStmt = conn.prepareStatement(updateCommandeSql);
+                    updateCommandeStmt.setInt(1, selectedCommandeExterne.getIdCommande());
+                    updateCommandeStmt.executeUpdate();
+                    updateCommandeStmt.close();
+
+                    // Récupérer toutes les lignes de la commande
+                    String getLignesSql = "SELECT * FROM ligne_commande_externe WHERE id_commande = ?";
+                    PreparedStatement getLignesStmt = conn.prepareStatement(getLignesSql);
+                    getLignesStmt.setInt(1, selectedCommandeExterne.getIdCommande());
+                    ResultSet lignesRs = getLignesStmt.executeQuery();
+
+                    // Mettre à jour le stock pour chaque ligne
+                    String updateStockSql = "UPDATE article SET qte = qte + ? WHERE reference = ?";
+                    PreparedStatement updateStockStmt = conn.prepareStatement(updateStockSql);
+
+                    // Ajouter les mouvements de stock
+                    String insertMouvementSql = "INSERT INTO mouvement_stock (ref_article, date_mouvement, type_mouvement, quantite, source_destination) VALUES (?, ?, ?, ?, ?)";
+                    PreparedStatement insertMouvementStmt = conn.prepareStatement(insertMouvementSql);
+
+                    while (lignesRs.next()) {
+                        int refArticle = lignesRs.getInt("ref_article");
+                        int quantite = lignesRs.getInt("quantite");
+
+
+
+                        // Mettre à jour le stock
+                        updateStockStmt.setInt(1, quantite);
+                        updateStockStmt.setInt(2, refArticle);
+                        updateStockStmt.executeUpdate();
+
+                        // Enregistrer le mouvement
+                        insertMouvementStmt.setInt(1, refArticle);
+                        insertMouvementStmt.setDate(2, Date.valueOf(LocalDate.now()));
+                        insertMouvementStmt.setString(3, "ENTREE");
+                        insertMouvementStmt.setInt(4, quantite);
+                        insertMouvementStmt.setString(5, "Commande externe #" + selectedCommandeExterne.getIdCommande());
+                        insertMouvementStmt.executeUpdate();
+                    }
+
+                    lignesRs.close();
+                    getLignesStmt.close();
+                    updateStockStmt.close();
+                    insertMouvementStmt.close();
+
+                    conn.commit();
+
+                    showMsg(Alert.AlertType.INFORMATION, "Succès", "La commande a été validée et le stock a été mis à jour.");
+
+                    // Recharger les commandes
+                    loadCommandesExternes();
+                } catch (SQLException e) {
+                    if (conn != null) {
+                        try {
+                            conn.rollback();
+                        } catch (SQLException ex) {
+                            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du rollback: " + ex.getMessage());
+                        }
+                    }
+                    showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la validation: " + e.getMessage());
+                } finally {
+                    if (conn != null) {
+                        try {
+                            conn.setAutoCommit(true);
+                            conn.close();
+                        } catch (SQLException e) {
+                            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la fermeture de la connexion: " + e.getMessage());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la validation: " + e.getMessage());
+        }
+    }
+    // Méthode pour charger les fournisseurs dans le ComboBox
+    private void loadFournisseursIntoComboBox() {
+        try {
+            String sql = "SELECT * FROM fournisseur ORDER BY nom";
+
+            Connection conn = DB.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            ObservableList<Fournisseur> fournisseursList = FXCollections.observableArrayList();
+
+            while (rs.next()) {
+                Fournisseur fournisseur = new Fournisseur(
+                        rs.getInt("id_fournisseur"),
+                        rs.getString("nom"),
+                        rs.getString("contact"),
+                        rs.getString("adresse")
+                );
+                fournisseursList.add(fournisseur);
+            }
+
+            comboFournisseurCommandeExterne.setItems(fournisseursList);
+
+            // Définir comment afficher les fournisseurs dans le ComboBox
+            comboFournisseurCommandeExterne.setCellFactory(param -> new ListCell<Fournisseur>() {
+                @Override
+                protected void updateItem(Fournisseur item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getNom());
+                    }
+                }
+            });
+
+            comboFournisseurCommandeExterne.setConverter(new StringConverter<Fournisseur>() {
+                @Override
+                public String toString(Fournisseur fournisseur) {
+                    if (fournisseur == null) {
+                        return null;
+                    }
+                    return fournisseur.getNom();
+                }
+
+                @Override
+                public Fournisseur fromString(String string) {
+                    return null; // Non utilisé
+                }
+            });
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des fournisseurs: " + e.getMessage());
+        }
+    }
+
+    // Méthode pour charger les articles dans le ComboBox
+    private void loadArticlesIntoComboBox() {
+        try {
+            String sql = "SELECT * FROM article ORDER BY nom";
+
+            Connection conn = DB.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            ObservableList<Article> articlesList = FXCollections.observableArrayList();
+
+            while (rs.next()) {
+                Article article = new Article(
+                        rs.getInt("reference"),
+                        rs.getString("nom"),
+                        rs.getString("categorie"),
+                        rs.getInt("qte"),
+                        rs.getString("local"),
+                        rs.getInt("qteMin"),
+                        rs.getDate("date") != null ? rs.getDate("date").toLocalDate() : null
+                );
+                articlesList.add(article);
+            }
+
+            // Configurer les ComboBox pour les commandes externes et internes
+            comboArticleCommandeExterne.setItems(articlesList);
+            comboArticleCommandeInterne.setItems(articlesList);
+
+            // Définir comment afficher les articles dans le ComboBox (commandes externes)
+            comboArticleCommandeExterne.setCellFactory(param -> new ListCell<Article>() {
+                @Override
+                protected void updateItem(Article item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getRef() + " - " + item.getNom());
+                    }
+                }
+            });
+
+            comboArticleCommandeExterne.setConverter(new StringConverter<Article>() {
+                @Override
+                public String toString(Article article) {
+                    if (article == null) {
+                        return null;
+                    }
+                    return article.getRef() + " - " + article.getNom();
+                }
+
+                @Override
+                public Article fromString(String string) {
+                    return null; // Non utilisé
+                }
+            });
+
+            // Définir comment afficher les articles dans le ComboBox (commandes internes)
+            comboArticleCommandeInterne.setCellFactory(param -> new ListCell<Article>() {
+                @Override
+                protected void updateItem(Article item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getRef() + " - " + item.getNom());
+                    }
+                }
+            });
+
+            comboArticleCommandeInterne.setConverter(new StringConverter<Article>() {
+                @Override
+                public String toString(Article article) {
+                    if (article == null) {
+                        return null;
+                    }
+                    return article.getRef() + " - " + article.getNom();
+                }
+
+                @Override
+                public Article fromString(String string) {
+                    return null; // Non utilisé
+                }
+            });
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des articles: " + e.getMessage());
+        }
+    }
+
+    // Méthode pour charger les locaux dans le ComboBox
+    private void loadLocauxIntoComboBox() {
+        try {
+            String sql = "SELECT * FROM local ORDER BY nom";
+
+            Connection conn = DB.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            ObservableList<Local> locauxList = FXCollections.observableArrayList();
+
+            while (rs.next()) {
+                Local local = new Local(
+                        rs.getInt("id"),
+                        rs.getString("nom"),
+                        rs.getString("type")
+                );
+                locauxList.add(local);
+            }
+
+            // Configurer les ComboBox pour les commandes externes et internes
+            comboLocalCommandeExterne.setItems(locauxList);
+            comboLocalCommandeInterne.setItems(locauxList);
+
+            // Définir comment afficher les locaux dans le ComboBox (commandes externes)
+            comboLocalCommandeExterne.setCellFactory(param -> new ListCell<Local>() {
+                @Override
+                protected void updateItem(Local item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getNom() + " (" + item.getType() + ")");
+                    }
+                }
+            });
+
+            comboLocalCommandeExterne.setConverter(new StringConverter<Local>() {
+                @Override
+                public String toString(Local local) {
+                    if (local == null) {
+                        return null;
+                    }
+                    return local.getNom() + " (" + local.getType() + ")";
+                }
+
+                @Override
+                public Local fromString(String string) {
+                    return null; // Non utilisé
+                }
+            });
+
+            // Définir comment afficher les locaux dans le ComboBox (commandes internes)
+            comboLocalCommandeInterne.setCellFactory(param -> new ListCell<Local>() {
+                @Override
+                protected void updateItem(Local item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getNom() + " (" + item.getType() + ")");
+                    }
+                }
+            });
+
+            comboLocalCommandeInterne.setConverter(new StringConverter<Local>() {
+                @Override
+                public String toString(Local local) {
+                    if (local == null) {
+                        return null;
+                    }
+                    return local.getNom() + " (" + local.getType() + ")";
+                }
+
+                @Override
+                public Local fromString(String string) {
+                    return null; // Non utilisé
+                }
+            });
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des locaux: " + e.getMessage());
+        }
+    }
+
+    // Méthode pour charger les services dans le ComboBox
+    private void loadServicesIntoComboBox() {
+        try {
+            String sql = "SELECT * FROM service ORDER BY nom";
+
+            Connection conn = DB.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            ObservableList<Service> servicesList = FXCollections.observableArrayList();
+
+            while (rs.next()) {
+                Service service = new Service(
+                        rs.getInt("id"),
+                        rs.getString("nom"),
+                        rs.getString("type"),
+                        rs.getString("contact"),
+                        rs.getString("responsable")
+                );
+                servicesList.add(service);
+            }
+
+            comboServiceCommandeInterne.setItems(servicesList);
+
+            // Définir comment afficher les services dans le ComboBox
+            comboServiceCommandeInterne.setCellFactory(param -> new ListCell<Service>() {
+                @Override
+                protected void updateItem(Service item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getNom());
+                    }
+                }
+            });
+
+            comboServiceCommandeInterne.setConverter(new StringConverter<Service>() {
+                @Override
+                public String toString(Service service) {
+                    if (service == null) {
+                        return null;
+                    }
+                    return service.getNom();
+                }
+
+                @Override
+                public Service fromString(String string) {
+                    return null; // Non utilisé
+                }
+            });
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des services: " + e.getMessage());
+        }
+    }
 
     //88//
     private void initialiseTypeService() {
@@ -249,6 +1352,9 @@ public class AppController implements Initializable {
         TypeService.setCellValueFactory(new PropertyValueFactory<>("type"));
         ResponsableService.setCellValueFactory(new PropertyValueFactory<>("responsable"));
 
+        initCommandeExterneView();
+        initCommandeInterneView();
+
 
     }
 
@@ -283,7 +1389,7 @@ public class AppController implements Initializable {
             ResultSet rs = stmt.executeQuery();
             tableFournisseur.getItems().clear();
             while (rs.next()) {
-                int id = rs.getInt("idfournisseur");
+                int id = rs.getInt("id_fournisseur");
                 String nom = rs.getString("nom");
                 String adresse = rs.getString("adresse");
                 String contact = rs.getString("contact");
@@ -618,6 +1724,7 @@ public class AppController implements Initializable {
                         rs.getString("type")
                 );
                 tableLocal.getItems().add(local);
+                localArticle.getItems().add(rs.getString("nom"));
             }
         } catch (SQLException e) {
             showMsg(Alert.AlertType.ERROR,"Database Error", e.getMessage());
@@ -654,6 +1761,7 @@ public class AppController implements Initializable {
             pstmt1.setInt(1, res.getInt(1));
             pstmt1.setString(2, nomLocal.getText());
             pstmt1.setString(3, typeLocal.getValue());
+            localArticle.getItems().add(nomLocal.getText());
             if(pstmt1.executeUpdate() == 1)
                 showMsg(Alert.AlertType.INFORMATION, "Information", "ligne ajoute avec succee");
             else showMsg(Alert.AlertType.ERROR, "Erreur", "erreur lors d'ajout de ligne!");
@@ -679,6 +1787,7 @@ public class AppController implements Initializable {
             if(numLigneSupprimer == 1)
                 showMsg(Alert.AlertType.INFORMATION, "Information", "ligne supprime avec succee");
             else showMsg(Alert.AlertType.ERROR, "Erreur", "ligne n'est pas supprimer!");
+            localArticle.getItems().remove(a.getNom());
             loadLocalFromDB();
         } catch (SQLException e) {
             showMsg(Alert.AlertType.ERROR, "Erreur", "erreur connexion BD");
@@ -808,7 +1917,7 @@ public class AppController implements Initializable {
             return;
         }
         String req1 = "INSERT INTO fournisseur VALUES(?,?,?,?)";
-        String req2 = "SELECT COALESCE(MAX(idfournisseur), 0) + 1 FROM fournisseur";
+        String req2 = "SELECT COALESCE(MAX(id_fournisseur), 0) + 1 FROM fournisseur";
         try {
             Connection c = DB.getConnection();
             PreparedStatement pstmt2 = c.prepareStatement(req2);
@@ -858,7 +1967,7 @@ public class AppController implements Initializable {
                 + "nom = ?, "
                 + "adresse = ?, "
                 + "contact = ? "
-                + "WHERE idfournisseur = ?";
+                + "WHERE id_fournisseur = ?";
         try (Connection conn = DB.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
             pstmt.setString(1, nomFournisseur.getText());
@@ -882,7 +1991,7 @@ public class AppController implements Initializable {
             loadFournisseurFromDB();
             return;
         }
-        String req = "SELECT * FROM fournisseur WHERE idfournisseur = ?";
+        String req = "SELECT * FROM fournisseur WHERE id_fournisseur = ?";
         try {
             Connection con = DB.getConnection();
             PreparedStatement pstmt = con.prepareStatement(req);
@@ -965,7 +2074,7 @@ public class AppController implements Initializable {
             showMsg(Alert.AlertType.ERROR, "Erreur", "tu doit selectionne une ligne du tableau!");
         }
         Fournisseur a = tableFournisseur.getSelectionModel().getSelectedItem();
-        String req = "DELETE FROM fournisseur WHERE idfournisseur = ?";
+        String req = "DELETE FROM fournisseur WHERE id_fournisseur = ?";
         try {
             Connection c = DB.getConnection();
             PreparedStatement pstmt = c.prepareStatement(req);

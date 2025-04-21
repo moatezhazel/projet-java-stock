@@ -1,135 +1,596 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.demo.AppController">
-  <children>
-    <AnchorPane fx:id="pageGestionnaireArticle" layoutY="100.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1000.0" visible="false">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.demo.AppController">
+
+
+  <!-- Menu de navigation latéral -->
+  <left>
+    <VBox id="sidebar" prefHeight="700.0" prefWidth="200.0" spacing="10.0" style="-fx-background-color: #2c3e50;">
+      <padding>
+        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+      </padding>
       <children>
-        <Button layoutX="30.0" layoutY="329.0" mnemonicParsing="false" onAction="#ajouterArticle" text="Ajouter" />
-        <Button layoutX="105.0" layoutY="329.0" mnemonicParsing="false" onAction="#supprimerArticle" prefHeight="26.0" prefWidth="75.0" text="Supprimer" />
-        <Button layoutX="30.0" layoutY="374.0" mnemonicParsing="false" onAction="#modifierArticle" text="Modifier" />
-        <TextField fx:id="nomArticle" layoutX="30.0" layoutY="72.0" promptText="nom article" />
-        <TextField fx:id="qteArticle" layoutX="30.0" layoutY="117.0" promptText="qte article" />
-        <TextField fx:id="qteMinArticle" layoutX="30.0" layoutY="158.0" promptText="qteMin article" />
-        <ComboBox fx:id="categorieArticle" layoutX="30.0" layoutY="200.0" prefWidth="150.0" promptText="categorie" />
-        <ComboBox fx:id="localArticle" layoutX="30.0" layoutY="246.0" prefWidth="150.0" promptText="local" />
-        <DatePicker fx:id="dateArticle" layoutX="30.0" layoutY="282.0" promptText="date peremtion" />
-        <TableView fx:id="tableArticle" layoutX="279.0" layoutY="67.0" onMouseClicked="#handleSelection1" prefHeight="290.0" prefWidth="707.0">
-          <columns>
-            <TableColumn fx:id="tableArticle_ref" prefWidth="75.0" text="reference" />
-            <TableColumn fx:id="tableArticle_nom" prefWidth="150.4000244140625" text="nom" />
-            <TableColumn fx:id="tableArticle_categorie" minWidth="9.5999755859375" prefWidth="127.199951171875" text="categorie" />
-            <TableColumn fx:id="tableArticle_qte" minWidth="0.0" prefWidth="80.800048828125" text="qte" />
-            <TableColumn fx:id="tableArticle_local" prefWidth="108.79998779296875" text="local" />
-            <TableColumn fx:id="tableArticle_qteMin" prefWidth="69.5999755859375" text="qteMin" />
-            <TableColumn fx:id="tableArticle_date" prefWidth="96.0" text="date" />
-          </columns>
-        </TableView>
-        <TextField fx:id="rechercheArticleRef" layoutX="341.0" layoutY="24.0" onKeyTyped="#rechercherArticleParRef" promptText="selon reference" />
-        <Label layoutX="279.0" layoutY="28.0" text="Recherche" />
-        <TableView layoutX="796.0" layoutY="399.0" prefHeight="186.0" prefWidth="150.0">
-          <columns>
-            <TableColumn prefWidth="75.0" text="C1" />
-            <TableColumn prefWidth="75.0" text="C2" />
-          </columns>
-        </TableView>
-        <Label layoutX="757.0" layoutY="369.0" text="les article en alerte avan date de peremtion" />
-        <Button layoutX="110.0" layoutY="374.0" mnemonicParsing="false" onAction="#rechercherArticle" text="Rechercher" />
-        <Button layoutX="215.0" layoutY="282.0" mnemonicParsing="false" onAction="#viderDate" text="Vider" />
-        <Button layoutX="72.0" layoutY="425.0" mnemonicParsing="false" onAction="#resetArticle" text="Reset" />
+        <Label alignment="CENTER" prefHeight="50.0" prefWidth="200.0" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;" text="GESTION APP" />
+
+        <Separator prefWidth="200.0" />
+        <Label style="-fx-text-fill: #95a5a6;" text="GESTION INVENTAIRE" />
+        <Button fx:id="btnGestionnaireArticle" mnemonicParsing="false" onAction="#switchPage" prefHeight="40.0" prefWidth="200.0" style="-fx-background-radius: 5;" text="Gestion des articles" />
+        <Button fx:id="btnGestionnaireLocal" mnemonicParsing="false" onAction="#switchPage" prefHeight="40.0" prefWidth="200.0" style="-fx-background-radius: 5;" text="Gestion des locaux" />
+
+        <Separator prefWidth="200.0">
+          <VBox.margin>
+            <Insets top="10.0" />
+          </VBox.margin>
+        </Separator>
+        <Label style="-fx-text-fill: #95a5a6;" text="PARTENAIRES" />
+        <Button fx:id="btnGestionnaireFournisseur" mnemonicParsing="false" onAction="#switchPage" prefHeight="40.0" prefWidth="200.0" style="-fx-background-radius: 5;" text="Gestion des fournisseurs" />
+        <Button fx:id="btngS" mnemonicParsing="false" onAction="#switchPage" prefHeight="40.0" prefWidth="200.0" style="-fx-background-radius: 5;" text="Gestion des Services" />
+
+        <Separator prefWidth="200.0">
+          <VBox.margin>
+            <Insets top="10.0" />
+          </VBox.margin>
+        </Separator>
+        <Label style="-fx-text-fill: #95a5a6;" text="COMMANDES" />
+        <Button fx:id="btnCommandeExterne" mnemonicParsing="false" onAction="#switchPage" prefHeight="40.0" prefWidth="200.0" style="-fx-background-radius: 5;" text="Commandes externes" />
+        <Button fx:id="btnCommandeInterne" mnemonicParsing="false" onAction="#switchPage" prefHeight="40.0" prefWidth="200.0" style="-fx-background-radius: 5;" text="Commandes internes" />
       </children>
-    </AnchorPane>
-    <Pane prefHeight="100.0" prefWidth="1000.0">
-      <children>
-        <Button fx:id="btnGestionnaireArticle" layoutX="14.0" layoutY="38.0" mnemonicParsing="false" onAction="#switchPage" text="gestion des articles" />
-        <Button fx:id="btnGestionnaireLocal" layoutX="131.0" layoutY="38.0" mnemonicParsing="false" onAction="#switchPage" text="gestion des locaux" />
-        <Button fx:id="btnGestionnaireFournisseur" layoutX="245.0" layoutY="38.0" mnemonicParsing="false" onAction="#switchPage" text="gestion des fournisseurs" />
-        <Button fx:id="btngS" layoutX="389.0" layoutY="38.0" mnemonicParsing="false" onAction="#switchPage" text="gestion des Services" />
-      </children>
-    </Pane>
-    <AnchorPane fx:id="pageGestionnaireLocal" layoutY="100.0" prefHeight="600.0" prefWidth="1000.0" visible="false">
-      <children>
-        <TextField fx:id="nomLocal" layoutX="87.0" layoutY="91.0" />
-        <ComboBox fx:id="typeLocal" layoutX="87.0" layoutY="125.0" prefWidth="150.0" />
-        <Label layoutX="36.0" layoutY="95.0" text="Nom:" />
-        <Label layoutX="36.0" layoutY="129.0" text="Types:" />
-        <Button layoutX="87.0" layoutY="357.0" mnemonicParsing="false" onAction="#ajouterLocal" text="Ajouter" />
-        <Button layoutX="193.0" layoutY="357.0" mnemonicParsing="false" onAction="#modifierLocal" text="Modifier" />
-        <Button layoutX="87.0" layoutY="422.0" mnemonicParsing="false" onAction="#supprimerLocal" text="Supprimer" />
-        <Button layoutX="193.0" layoutY="422.0" mnemonicParsing="false" onAction="#rechercherLocal" text="Rechercher" />
-        <Button layoutX="158.0" layoutY="488.0" mnemonicParsing="false" onAction="#resetLocal" text="Réinitialiser" />
-        <Label layoutX="514.0" layoutY="58.0" text="Rechercher" />
-        <TextField fx:id="rechercheParIdLocal" layoutX="596.0" layoutY="54.0" onKeyTyped="#rechercherLocalParId" />
-        <TableView fx:id="tableLocal" layoutX="491.0" layoutY="96.0" onMouseClicked="#handleSelection2" prefHeight="487.0" prefWidth="322.0">
-          <columns>
-            <TableColumn fx:id="identifiantLocal" prefWidth="104.79998779296875" text="Identifiant" />
-            <TableColumn fx:id="NomLocal" prefWidth="109.60003662109375" text="Nom" />
-            <TableColumn fx:id="TypeLocal" prefWidth="106.39999999999998" text="Type" />
-          </columns>
-        </TableView>
-      </children>
-    </AnchorPane>
-    <AnchorPane fx:id="pageGestionnaireFournisseur" layoutY="107.0" prefHeight="600.0" prefWidth="1000.0">
-      <children>
-        <TextField fx:id="nomFournisseur" layoutX="103.0" layoutY="91.0" />
-        <TextField fx:id="adresseFournisseur" layoutX="104.0" layoutY="134.0" />
-        <TextField fx:id="contactFournisseur" layoutX="103.0" layoutY="179.0" />
-        <Label layoutX="44.0" layoutY="95.0" text="Nom:" />
-        <Label layoutX="44.0" layoutY="138.0" text="Adresse" />
-        <Label layoutX="44.0" layoutY="183.0" text="Contact:" />
-        <Button layoutX="220.0" layoutY="316.0" mnemonicParsing="false" onAction="#ajouterFournisseur" text="Ajouter" />
-        <Button layoutX="217.0" layoutY="265.0" mnemonicParsing="false" onAction="#modifierFournisseur" text="Modifier" />
-        <Button layoutX="113.0" layoutY="316.0" mnemonicParsing="false" onAction="#supprimerFournisseur" text="Supprimer" />
-        <Button layoutX="111.0" layoutY="265.0" mnemonicParsing="false" onAction="#rechercherFournisseur" text="Rechercher" />
-        <Button layoutX="178.0" layoutY="356.0" mnemonicParsing="false" onAction="#resetFournisseur" text="Rénitialiser" />
-        <TextField fx:id="rechercherFournisseur" layoutX="426.0" layoutY="45.0" onKeyTyped="#rechercherFournisseurParRef" />
-        <Label layoutX="345.0" layoutY="49.0" text="Rechercher" />
-        <TableView fx:id="tableFournisseur" layoutX="328.0" layoutY="89.0" onMouseClicked="#handleSelection3" prefHeight="478.0" prefWidth="403.0">
-          <columns>
-            <TableColumn fx:id="IdFournisseur" prefWidth="107.19998168945312" text="Identifiant" />
-            <TableColumn fx:id="NomFournisseur" prefWidth="96.0" text="Nom" />
-            <TableColumn fx:id="AdresseFournisseur" prefWidth="94.4000244140625" text="Adresse" />
-            <TableColumn fx:id="ContactFournisseur" prefWidth="103.99998779296874" text="Contact" />
-          </columns>
-        </TableView>
-      </children>
-    </AnchorPane>
-    <AnchorPane fx:id="panedeService" layoutY="93.0" prefHeight="607.0" prefWidth="1000.0" visible="false">
-      <children>
-        <Label layoutX="81.0" layoutY="63.0" text="Nom:" />
-        <Label layoutX="47.0" layoutY="150.0" text="Responsable:" />
-        <Label layoutX="82.0" layoutY="108.0" text="Type:" />
-        <TextField fx:id="nomService" layoutX="129.0" layoutY="59.0" />
-        <TextField fx:id="responsableService" layoutX="130.0" layoutY="146.0" />
-        <TextField fx:id="contactService" layoutX="129.0" layoutY="187.0" />
-        <Label layoutX="74.0" layoutY="191.0" text="Contact:" />
-        <ComboBox fx:id="typeService" layoutX="130.0" layoutY="104.0" prefWidth="150.0" />
-        <Button layoutX="70.0" layoutY="311.0" mnemonicParsing="false" onAction="#ajouterService" text="Ajouter" />
-        <Button layoutX="70.0" layoutY="389.0" mnemonicParsing="false" onAction="#supprimerService" text="Supprimer" />
-        <Button layoutX="153.0" layoutY="311.0" mnemonicParsing="false" onAction="#modifierService" text="Modifier" />
-        <Button layoutX="153.0" layoutY="389.0" mnemonicParsing="false" onAction="#rechercherService" text="Rechercher" />
-        <Button layoutX="111.0" layoutY="464.0" mnemonicParsing="false" onAction="#resetService" text="Réinitialiser" />
-        <Label layoutX="514.0" layoutY="51.0" text="Rechercher:" />
-        <TextField fx:id="rechercherSPI" layoutX="593.0" layoutY="46.0" onKeyTyped="#rechercherServiceParID" />
-        <TableView fx:id="tableService" layoutX="406.0" layoutY="104.0" onMouseClicked="#handleSelection4" prefHeight="478.0" prefWidth="579.0">
-          <columns>
-            <TableColumn fx:id="IDService" prefWidth="118.39996337890625" text="Identifiant" />
-            <TableColumn fx:id="NomService" prefWidth="104.00006103515625" text="Nom" />
-            <TableColumn fx:id="TypeService" prefWidth="123.20001220703125" text="Type" />
-            <TableColumn fx:id="ResponsableService" prefWidth="115.199951171875" text="Responsable" />
-            <TableColumn fx:id="ContactService" prefWidth="115.199951171875" text="Contact" />
-          </columns>
-        </TableView>
-      </children>
-    </AnchorPane>
-  </children>
-</Pane>
+    </VBox>
+  </left>
+
+  <!-- Zone principale de contenu -->
+  <center>
+    <ScrollPane fitToHeight="true" fitToWidth="true" pannable="true">
+      <content>
+        <!-- Article Management Page -->
+        <AnchorPane fx:id="pageGestionnaireArticle" prefHeight="700.0" prefWidth="800.0" visible="false">
+          <children>
+            <VBox layoutX="0.0" layoutY="0.0" prefHeight="700.0" prefWidth="800.0" spacing="20.0">
+              <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+              </padding>
+              <children>
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Gestion des Articles" />
+
+                <HBox spacing="20.0">
+                  <!-- Formulaire d'article -->
+                  <VBox prefWidth="300.0" spacing="10.0" style="-fx-background-color: #f5f5f5; -fx-background-radius: 10;">
+                    <padding>
+                      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </padding>
+                    <children>
+                      <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Informations Article" />
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="120.0" text="Nom:" />
+                        <TextField fx:id="nomArticle" promptText="Nom article" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="120.0" text="Quantité:" />
+                        <TextField fx:id="qteArticle" promptText="Quantité article" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="120.0" text="Quantité min:" />
+                        <TextField fx:id="qteMinArticle" promptText="Quantité minimale" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="120.0" text="Catégorie:" />
+                        <ComboBox fx:id="categorieArticle" promptText="Catégorie" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="120.0" text="Local:" />
+                        <ComboBox fx:id="localArticle" promptText="Local" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="120.0" text="Péremption:" />
+                        <DatePicker fx:id="dateArticle" promptText="Date péremption" HBox.hgrow="ALWAYS" />
+                        <Button mnemonicParsing="false" onAction="#viderDate" text="Vider" />
+                      </HBox>
+
+                      <Separator />
+
+                      <HBox alignment="CENTER" spacing="10.0">
+                        <Button mnemonicParsing="false" onAction="#ajouterArticle" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="Ajouter" />
+                        <Button mnemonicParsing="false" onAction="#modifierArticle" style="-fx-background-color: #3498db; -fx-text-fill: white;" text="Modifier" />
+                        <Button mnemonicParsing="false" onAction="#supprimerArticle" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" text="Supprimer" />
+                        <Button mnemonicParsing="false" onAction="#resetArticle" style="-fx-background-color: #95a5a6; -fx-text-fill: white;" text="Reset" />
+                      </HBox>
+                    </children>
+                  </VBox>
+
+                  <!-- Tableau des articles -->
+                  <VBox HBox.hgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                      <Label text="Recherche:" />
+                      <TextField fx:id="rechercheArticleRef" onKeyTyped="#rechercherArticleParRef" promptText="Recherche par référence" HBox.hgrow="ALWAYS" />
+                      <Button mnemonicParsing="false" onAction="#rechercherArticle" style="-fx-background-color: #3498db; -fx-text-fill: white;" text="Rechercher" />
+                    </HBox>
+
+                    <TableView fx:id="tableArticle" onMouseClicked="#handleSelection1" VBox.vgrow="ALWAYS">
+                      <columns>
+                        <TableColumn fx:id="tableArticle_ref" prefWidth="75.0" text="Référence" />
+                        <TableColumn fx:id="tableArticle_nom" prefWidth="150.0" text="Nom" />
+                        <TableColumn fx:id="tableArticle_categorie" prefWidth="120.0" text="Catégorie" />
+                        <TableColumn fx:id="tableArticle_qte" prefWidth="80.0" text="Quantité" />
+                        <TableColumn fx:id="tableArticle_local" prefWidth="120.0" text="Local" />
+                        <TableColumn fx:id="tableArticle_qteMin" prefWidth="80.0" text="Qte Min" />
+                        <TableColumn fx:id="tableArticle_date" prefWidth="120.0" text="Date" />
+                      </columns>
+                    </TableView>
+                  </VBox>
+                </HBox>
+              </children>
+            </VBox>
+          </children>
+        </AnchorPane>
+
+        <!-- Local Management Page -->
+        <AnchorPane fx:id="pageGestionnaireLocal" prefHeight="700.0" prefWidth="800.0" visible="false">
+          <children>
+            <VBox layoutX="0.0" layoutY="0.0" prefHeight="700.0" prefWidth="800.0" spacing="20.0">
+              <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+              </padding>
+              <children>
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Gestion des Locaux" />
+
+                <HBox spacing="20.0">
+                  <!-- Formulaire de local -->
+                  <VBox prefWidth="300.0" spacing="10.0" style="-fx-background-color: #f5f5f5; -fx-background-radius: 10;">
+                    <padding>
+                      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </padding>
+                    <children>
+                      <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Informations Local" />
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="80.0" text="Nom:" />
+                        <TextField fx:id="nomLocal" promptText="Nom du local" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="80.0" text="Type:" />
+                        <ComboBox fx:id="typeLocal" promptText="Type de local" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <Separator>
+                        <VBox.margin>
+                          <Insets top="10.0" />
+                        </VBox.margin>
+                      </Separator>
+
+                      <HBox alignment="CENTER" spacing="10.0">
+                        <Button mnemonicParsing="false" onAction="#ajouterLocal" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="Ajouter" />
+                        <Button mnemonicParsing="false" onAction="#modifierLocal" style="-fx-background-color: #3498db; -fx-text-fill: white;" text="Modifier" />
+                      </HBox>
+
+                      <HBox alignment="CENTER" spacing="10.0">
+                        <Button mnemonicParsing="false" onAction="#supprimerLocal" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" text="Supprimer" />
+                        <Button mnemonicParsing="false" onAction="#resetLocal" style="-fx-background-color: #95a5a6; -fx-text-fill: white;" text="Réinitialiser" />
+                      </HBox>
+                    </children>
+                  </VBox>
+
+                  <!-- Tableau des locaux -->
+                  <VBox HBox.hgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                      <Label text="Recherche:" />
+                      <TextField fx:id="rechercheParIdLocal" onKeyTyped="#rechercherLocalParId" promptText="Recherche par ID" HBox.hgrow="ALWAYS" />
+                      <Button mnemonicParsing="false" onAction="#rechercherLocal" style="-fx-background-color: #3498db; -fx-text-fill: white;" text="Rechercher" />
+                    </HBox>
+
+                    <TableView fx:id="tableLocal" onMouseClicked="#handleSelection2" VBox.vgrow="ALWAYS">
+                      <columns>
+                        <TableColumn fx:id="identifiantLocal" prefWidth="100.0" text="ID" />
+                        <TableColumn fx:id="NomLocal" prefWidth="200.0" text="Nom" />
+                        <TableColumn fx:id="TypeLocal" prefWidth="150.0" text="Type" />
+                      </columns>
+                    </TableView>
+                  </VBox>
+                </HBox>
+              </children>
+            </VBox>
+          </children>
+        </AnchorPane>
+
+        <!-- Supplier Management Page -->
+        <AnchorPane fx:id="pageGestionnaireFournisseur" prefHeight="700.0" prefWidth="800.0" visible="false">
+          <children>
+            <VBox layoutX="0.0" layoutY="0.0" prefHeight="700.0" prefWidth="800.0" spacing="20.0">
+              <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+              </padding>
+              <children>
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Gestion des Fournisseurs" />
+
+                <HBox spacing="20.0">
+                  <!-- Formulaire de fournisseur -->
+                  <VBox prefWidth="300.0" spacing="10.0" style="-fx-background-color: #f5f5f5; -fx-background-radius: 10;">
+                    <padding>
+                      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </padding>
+                    <children>
+                      <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Informations Fournisseur" />
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="80.0" text="Nom:" />
+                        <TextField fx:id="nomFournisseur" promptText="Nom fournisseur" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="80.0" text="Adresse:" />
+                        <TextField fx:id="adresseFournisseur" promptText="Adresse" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="80.0" text="Contact:" />
+                        <TextField fx:id="contactFournisseur" promptText="Contact" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <Separator>
+                        <VBox.margin>
+                          <Insets top="10.0" />
+                        </VBox.margin>
+                      </Separator>
+
+                      <HBox alignment="CENTER" spacing="10.0">
+                        <Button mnemonicParsing="false" onAction="#ajouterFournisseur" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="Ajouter" />
+                        <Button mnemonicParsing="false" onAction="#modifierFournisseur" style="-fx-background-color: #3498db; -fx-text-fill: white;" text="Modifier" />
+                      </HBox>
+
+                      <HBox alignment="CENTER" spacing="10.0">
+                        <Button mnemonicParsing="false" onAction="#supprimerFournisseur" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" text="Supprimer" />
+                        <Button mnemonicParsing="false" onAction="#resetFournisseur" style="-fx-background-color: #95a5a6; -fx-text-fill: white;" text="Réinitialiser" />
+                      </HBox>
+                    </children>
+                  </VBox>
+
+                  <!-- Tableau des fournisseurs -->
+                  <VBox HBox.hgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                      <Label text="Recherche:" />
+                      <TextField fx:id="rechercherFournisseur" onKeyTyped="#rechercherFournisseurParRef" promptText="Recherche par référence" HBox.hgrow="ALWAYS" />
+                      <Button mnemonicParsing="false" onAction="#rechercherFournisseur" style="-fx-background-color: #3498db; -fx-text-fill: white;" text="Rechercher" />
+                    </HBox>
+
+                    <TableView fx:id="tableFournisseur" onMouseClicked="#handleSelection3" VBox.vgrow="ALWAYS">
+                      <columns>
+                        <TableColumn fx:id="IdFournisseur" prefWidth="100.0" text="ID" />
+                        <TableColumn fx:id="NomFournisseur" prefWidth="150.0" text="Nom" />
+                        <TableColumn fx:id="AdresseFournisseur" prefWidth="200.0" text="Adresse" />
+                        <TableColumn fx:id="ContactFournisseur" prefWidth="150.0" text="Contact" />
+                      </columns>
+                    </TableView>
+                  </VBox>
+                </HBox>
+              </children>
+            </VBox>
+          </children>
+        </AnchorPane>
+
+        <!-- Service Management Page -->
+        <AnchorPane fx:id="panedeService" prefHeight="700.0" prefWidth="800.0" visible="false">
+          <children>
+            <VBox layoutX="0.0" layoutY="0.0" prefHeight="700.0" prefWidth="800.0" spacing="20.0">
+              <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+              </padding>
+              <children>
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Gestion des Services" />
+
+                <HBox spacing="20.0">
+                  <!-- Formulaire de service -->
+                  <VBox prefWidth="300.0" spacing="10.0" style="-fx-background-color: #f5f5f5; -fx-background-radius: 10;">
+                    <padding>
+                      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </padding>
+                    <children>
+                      <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Informations Service" />
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Nom:" />
+                        <TextField fx:id="nomService" promptText="Nom du service" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Type:" />
+                        <ComboBox fx:id="typeService" promptText="Type de service" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Responsable:" />
+                        <TextField fx:id="responsableService" promptText="Nom du responsable" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Contact:" />
+                        <TextField fx:id="contactService" promptText="Contact" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <Separator>
+                        <VBox.margin>
+                          <Insets top="10.0" />
+                        </VBox.margin>
+                      </Separator>
+
+                      <HBox alignment="CENTER" spacing="10.0">
+                        <Button mnemonicParsing="false" onAction="#ajouterService" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="Ajouter" />
+                        <Button mnemonicParsing="false" onAction="#modifierService" style="-fx-background-color: #3498db; -fx-text-fill: white;" text="Modifier" />
+                      </HBox>
+
+                      <HBox alignment="CENTER" spacing="10.0">
+                        <Button mnemonicParsing="false" onAction="#supprimerService" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" text="Supprimer" />
+                        <Button mnemonicParsing="false" onAction="#resetService" style="-fx-background-color: #95a5a6; -fx-text-fill: white;" text="Réinitialiser" />
+                      </HBox>
+                    </children>
+                  </VBox>
+
+                  <!-- Tableau des services -->
+                  <VBox HBox.hgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                      <Label text="Recherche:" />
+                      <TextField fx:id="rechercherSPI" onKeyTyped="#rechercherServiceParID" promptText="Recherche par ID" HBox.hgrow="ALWAYS" />
+                      <Button mnemonicParsing="false" onAction="#rechercherService" style="-fx-background-color: #3498db; -fx-text-fill: white;" text="Rechercher" />
+                    </HBox>
+
+                    <TableView fx:id="tableService" onMouseClicked="#handleSelection4" VBox.vgrow="ALWAYS">
+                      <columns>
+                        <TableColumn fx:id="IDService" prefWidth="100.0" text="ID" />
+                        <TableColumn fx:id="NomService" prefWidth="120.0" text="Nom" />
+                        <TableColumn fx:id="TypeService" prefWidth="120.0" text="Type" />
+                        <TableColumn fx:id="ResponsableService" prefWidth="150.0" text="Responsable" />
+                        <TableColumn fx:id="ContactService" prefWidth="120.0" text="Contact" />
+                      </columns>
+                    </TableView>
+                  </VBox>
+                </HBox>
+              </children>
+            </VBox>
+          </children>
+        </AnchorPane>
+
+        <!-- External Orders Page -->
+        <AnchorPane fx:id="pageCommandeExterne" prefHeight="700.0" prefWidth="800.0" visible="false">
+          <children>
+            <VBox layoutX="0.0" layoutY="0.0" prefHeight="700.0" prefWidth="800.0" spacing="20.0">
+              <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+              </padding>
+              <children>
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Gestion des Commandes Externes" />
+
+                <HBox spacing="20.0" VBox.vgrow="ALWAYS">
+                  <!-- Panneau gauche pour la création de commande -->
+                  <VBox spacing="15.0" style="-fx-background-color: #f5f5f5; -fx-background-radius: 10;">
+                    <padding>
+                      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </padding>
+                    <children>
+                      <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Nouvelle Commande" />
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Fournisseur:" />
+                        <ComboBox fx:id="comboFournisseurCommandeExterne" prefWidth="200.0" promptText="Sélectionner un fournisseur" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Date:" />
+                        <DatePicker fx:id="dateDateCommandeExterne" prefWidth="200.0" promptText="Date de commande" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Description:" />
+                        <TextArea fx:id="txtDescriptionCommandeExterne" prefHeight="80.0" prefWidth="200.0" promptText="Description de la commande" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <Button mnemonicParsing="false" onAction="#createCommandeExterne" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="Créer commande">
+                        <VBox.margin>
+                          <Insets top="10.0" />
+                        </VBox.margin>
+                      </Button>
+
+                      <Separator />
+
+                      <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Ajouter un article" />
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Article:" />
+                        <ComboBox fx:id="comboArticleCommandeExterne" prefWidth="200.0" promptText="Sélectionner un article" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Quantité:" />
+                        <TextField fx:id="txtQuantiteCommandeExterne" prefWidth="200.0" promptText="Quantité" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Local:" />
+                        <ComboBox fx:id="comboLocalCommandeExterne" prefWidth="200.0" promptText="Local de destination" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <Button mnemonicParsing="false" onAction="#addLigneCommandeExterne" style="-fx-background-color: #3498db; -fx-text-fill: white;" text="Ajouter article">
+                        <VBox.margin>
+                          <Insets top="10.0" />
+                        </VBox.margin>
+                      </Button>
+
+                      <Button mnemonicParsing="false" onAction="#validateCommandeExterne" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Valider commande">
+                        <VBox.margin>
+                          <Insets top="20.0" />
+                        </VBox.margin>
+                      </Button>
+                    </children>
+                  </VBox>
+
+                  <!-- Panneau droit pour les tableaux de commandes -->
+                  <VBox spacing="15.0" HBox.hgrow="ALWAYS">
+                    <children>
+                      <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Liste des commandes" />
+
+                      <TableView fx:id="tableCommandeExterne" prefHeight="280.0" VBox.vgrow="ALWAYS">
+                        <columns>
+                          <TableColumn fx:id="colIdCommandeExterne" prefWidth="60.0" text="ID" />
+                          <TableColumn fx:id="colFournisseurCommandeExterne" prefWidth="150.0" text="Fournisseur" />
+                          <TableColumn fx:id="colDateCommandeExterne" prefWidth="120.0" text="Date" />
+                          <TableColumn fx:id="colStatutCommandeExterne" prefWidth="100.0" text="Statut" />
+                          <TableColumn fx:id="colDescriptionCommandeExterne" prefWidth="180.0" text="Description" />
+                        </columns>
+                      </TableView>
+
+                      <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Articles de la commande sélectionnée">
+                        <VBox.margin>
+                          <Insets top="10.0" />
+                        </VBox.margin>
+                      </Label>
+
+                      <TableView fx:id="tableLignesCommandeExterne" prefHeight="270.0" VBox.vgrow="ALWAYS">
+                        <columns>
+                          <TableColumn fx:id="colRefArticleCommandeExterne" prefWidth="80.0" text="Réf. Article" />
+                          <TableColumn fx:id="colNomArticleCommandeExterne" prefWidth="200.0" text="Article" />
+                          <TableColumn fx:id="colQuantiteCommandeExterne" prefWidth="80.0" text="Quantité" />
+                          <TableColumn fx:id="colLocalCommandeExterne" prefWidth="150.0" text="Local destination" />
+                        </columns>
+                      </TableView>
+                    </children>
+                  </VBox>
+                </HBox>
+              </children>
+            </VBox>
+          </children>
+        </AnchorPane>
+
+        <!-- Internal Orders Page -->
+        <AnchorPane fx:id="pageCommandeInterne" prefHeight="700.0" prefWidth="800.0" visible="false">
+          <children>
+            <VBox layoutX="0.0" layoutY="0.0" prefHeight="700.0" prefWidth="800.0" spacing="20.0">
+              <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+              </padding>
+              <children>
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Gestion des Commandes Internes" />
+
+                <HBox spacing="20.0" VBox.vgrow="ALWAYS">
+                  <!-- Panneau gauche pour la création de commande -->
+                  <VBox spacing="15.0" style="-fx-background-color: #f5f5f5; -fx-background-radius: 10;">
+                    <padding>
+                      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </padding>
+                    <children>
+                      <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Nouvelle Commande" />
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Service:" />
+                        <ComboBox fx:id="comboServiceCommandeInterne" prefWidth="200.0" promptText="Sélectionner un service" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Date:" />
+                        <DatePicker fx:id="dateDateCommandeInterne" prefWidth="200.0" promptText="Date de commande" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Description:" />
+                        <TextArea fx:id="txtDescriptionCommandeInterne" prefHeight="80.0" prefWidth="200.0" promptText="Description de la commande" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <Button mnemonicParsing="false" onAction="#createCommandeInterne" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="Créer commande">
+                        <VBox.margin>
+                          <Insets top="10.0" />
+                        </VBox.margin>
+                      </Button>
+
+                      <Separator />
+
+                      <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Ajouter un article" />
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Article:" />
+                        <ComboBox fx:id="comboArticleCommandeInterne" prefWidth="200.0" promptText="Sélectionner un article" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Quantité:" />
+                        <TextField fx:id="txtQuantiteCommandeInterne" prefWidth="200.0" promptText="Quantité" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label prefWidth="100.0" text="Local source:" />
+                        <ComboBox fx:id="comboLocalCommandeInterne" prefWidth="200.0" promptText="Local source" HBox.hgrow="ALWAYS" />
+                      </HBox>
+
+                      <Button mnemonicParsing="false" onAction="#addLigneCommandeInterne" style="-fx-background-color: #3498db; -fx-text-fill: white;" text="Ajouter article">
+                        <VBox.margin>
+                          <Insets top="10.0" />
+                        </VBox.margin>
+                      </Button>
+
+                      <Button mnemonicParsing="false" onAction="#validateCommandeInterne" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Valider commande">
+                        <VBox.margin>
+                          <Insets top="20.0" />
+                        </VBox.margin>
+                      </Button>
+                    </children>
+                  </VBox>
+
+                  <!-- Panneau droit pour les tableaux de commandes -->
+                  <VBox spacing="15.0" HBox.hgrow="ALWAYS">
+                    <children>
+                      <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Liste des commandes" />
+
+                      <TableView fx:id="tableCommandeInterne" prefHeight="280.0" VBox.vgrow="ALWAYS">
+                        <columns>
+                          <TableColumn fx:id="colIdCommandeInterne" prefWidth="60.0" text="ID" />
+                          <TableColumn fx:id="colServiceCommandeInterne" prefWidth="150.0" text="Service" />
+                          <TableColumn fx:id="colDateCommandeInterne" prefWidth="120.0" text="Date" />
+                          <TableColumn fx:id="colStatutCommandeInterne" prefWidth="100.0" text="Statut" />
+                          <TableColumn fx:id="colDescriptionCommandeInterne" prefWidth="180.0" text="Description" />
+                        </columns>
+                      </TableView>
+
+                      <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Articles de la commande sélectionnée">
+                        <VBox.margin>
+                          <Insets top="10.0" />
+                        </VBox.margin>
+                      </Label>
+
+                      <TableView fx:id="tableLignesCommandeInterne" prefHeight="270.0" VBox.vgrow="ALWAYS">
+                        <columns>
+                          <TableColumn fx:id="colRefArticleCommandeInterne" prefWidth="80.0" text="Réf. Article" />
+                          <TableColumn fx:id="colNomArticleCommandeInterne" prefWidth="200.0" text="Article" />
+                          <TableColumn fx:id="colQuantiteCommandeInterne" prefWidth="80.0" text="Quantité" />
+                          <TableColumn fx:id="colLocalCommandeInterne" prefWidth="150.0" text="Local source" />
+                        </columns>
+                      </TableView>
+                    </children>
+                  </VBox>
+                </HBox>
+              </children>
+            </VBox>
+          </children>
+        </AnchorPane>
+      </content>
+    </ScrollPane>
+  </center>
+</BorderPane>
