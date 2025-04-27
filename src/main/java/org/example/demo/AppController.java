@@ -1,10 +1,31 @@
+
+//8888888888888888
 package org.example.demo;
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
+import java.io.File;
+import java.awt.Desktop;
+import javafx.stage.FileChooser;
+//8888888888
 import javafx.event.ActionEvent;
+
+import java.io.File;
 import java.net.ConnectException;
 import java.net.URL;
 import java.sql.*;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import javafx.scene.input.KeyEvent;
@@ -12,6 +33,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.ListCell;
+import javafx.scene.layout.Pane;
+import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -26,13 +49,14 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 
+
 public class AppController implements Initializable {
     @FXML
     private AnchorPane pageCommandeExterne;
     @FXML
     private AnchorPane pageCommandeInterne;
     // For command management
-    //private CommandeExterne selectedCommandeExterne;
+    // private CommandeExterne selectedCommandeExterne;
     private CommandeInterne selectedCommandeInterne;
     private ObservableList<CommandeExterne> commandesExternesList = FXCollections.observableArrayList();
     private ObservableList<CommandeInterne> commandesInternesList = FXCollections.observableArrayList();
@@ -189,6 +213,7 @@ public class AppController implements Initializable {
 
 
     @FXML private Button btnAjouterArticle;
+    @FXML private Button btnInventaire;
 
 
     @FXML private ComboBox<String> categorieArticle;
@@ -207,6 +232,8 @@ public class AppController implements Initializable {
     @FXML private TableColumn<Article, String> tableArticle_local;
     @FXML private TableColumn<Article, Integer> tableArticle_qteMin;
     @FXML private TableColumn<Article, LocalDate> tableArticle_date;
+    //mmm
+
     //mmmmm
     private void initCommandeInterneView() {
         // Initialiser les colonnes du tableau des commandes internes
@@ -255,14 +282,16 @@ public class AppController implements Initializable {
         Button clickedButton = (Button) event.getSource();
 
         // Liste de toutes les pages avec leur bouton correspondant
-        Map<Button, AnchorPane> pageMap = Map.of(
-                btnGestionnaireArticle, pageGestionnaireArticle,
-                btnGestionnaireLocal, pageGestionnaireLocal,
-                btnGestionnaireFournisseur, pageGestionnaireFournisseur,
-                btngS, panedeService,  // Note: btngS correspond à votre bouton Service
-                btnCommandeExterne, pageCommandeExterne,
-                btnCommandeInterne, pageCommandeInterne
-        );
+        // Impossible d'utiliser Map.of() car il est limité à 10 paires clé-valeur
+        // Utilisons une méthode alternative pour créer la map
+        Map<Button, AnchorPane> pageMap = new HashMap<>();
+        pageMap.put(btnGestionnaireArticle, pageGestionnaireArticle);
+        pageMap.put(btnGestionnaireLocal, pageGestionnaireLocal);
+        pageMap.put(btnGestionnaireFournisseur, pageGestionnaireFournisseur);
+        pageMap.put(btngS, panedeService);
+        pageMap.put(btnCommandeExterne, pageCommandeExterne);
+        pageMap.put(btnCommandeInterne, pageCommandeInterne);
+        pageMap.put(btnInventaire, pageInventaire); // Ajout de la page d'inventaire
 
         // Cacher toutes les pages
         pageMap.values().forEach(page -> page.setVisible(false));
@@ -272,11 +301,14 @@ public class AppController implements Initializable {
         if (selectedPage != null) {
             selectedPage.setVisible(true);
 
-            // Chargements spécifiques pour les commandes
+            // Chargements spécifiques pour les pages
             if (clickedButton == btnCommandeExterne) {
                 loadCommandesExternes();
             } else if (clickedButton == btnCommandeInterne) {
                 loadCommandesInternes();
+            } else if (clickedButton == btnInventaire) {
+                // Charger les données d'inventaire quand cette page est sélectionnée
+                loadInventaireData();
             }
         }
     }
@@ -300,6 +332,7 @@ public class AppController implements Initializable {
                         rs.getDate("date_commande").toLocalDate(),
                         rs.getString("statut"),
                         rs.getString("description")
+
                 );
                 commandesList.add(commande);
             }
@@ -600,6 +633,7 @@ public class AppController implements Initializable {
                     }
                 }
             }
+            updateInventaireFromCommandeInterne(selectedCommandeInterne.getIdCommande());
 
 
         } catch (Exception e) {
@@ -613,6 +647,8 @@ public class AppController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
        /* configureCommandesTables();
         loadCommandesFromDB();*/
+
+
         initializeTableColumns();
         initialiseCategorieArticle();
         loadArticlesFromDB();
@@ -622,8 +658,14 @@ public class AppController implements Initializable {
         loadFournisseurFromDB();
         initialiseTypeService();
         loadServiceFromDB();
-        pageGestionnaireArticle.setVisible(true);
+
+
+
+        // Charger les données initiales
+
+
     }
+
 
     //88//
     // Variable pour stocker la commande externe sélectionnée
@@ -1206,6 +1248,9 @@ public class AppController implements Initializable {
         }
     }
 
+
+
+
     // Méthode pour charger les services dans le ComboBox
     private void loadServicesIntoComboBox() {
         try {
@@ -1317,6 +1362,7 @@ public class AppController implements Initializable {
             showMsg(Alert.AlertType.ERROR,"Database Error", e.getMessage());
         }
     }
+
     private void initialiseLocalArticle() {
         String req = "SELECT nom FROM local WHERE type LIKE ?";
         try {
@@ -1354,6 +1400,7 @@ public class AppController implements Initializable {
 
         initCommandeExterneView();
         initCommandeInterneView();
+        initInventaireView();
 
 
     }
@@ -1400,6 +1447,7 @@ public class AppController implements Initializable {
             showMsg(Alert.AlertType.ERROR,"Database Error", e.getMessage());
         }
     }
+
 
 
     private void showMsg(Alert.AlertType type, String title, String message) {
@@ -2285,5 +2333,822 @@ public class AppController implements Initializable {
 
 
     }
+    //ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+    @FXML private AnchorPane pageInventaire;
+    @FXML private ComboBox<Service> comboServiceInventaire;
+    @FXML private ComboBox<Local> comboLocalInventaire;
+    @FXML private ComboBox<String> comboCategorieInventaire;
+    @FXML private TextField rechercheArticleInventaire;
+    @FXML private TableView<InventaireItem> tableInventaire;
+    @FXML private TableColumn<InventaireItem, Integer> colRefArticleInventaire;
+    @FXML private TableColumn<InventaireItem, String> colNomArticleInventaire;
+    @FXML private TableColumn<InventaireItem, String> colCategorieArticleInventaire;
+    @FXML private TableColumn<InventaireItem, String> colServiceInventaire;
+    @FXML private TableColumn<InventaireItem, String> colLocalInventaire;
+    @FXML private TableColumn<InventaireItem, Integer> colQuantiteInventaire;
+    @FXML private TableColumn<InventaireItem, LocalDate> colDateAffectationInventaire;
+    @FXML private Label totalItemsInventaire;
+    @FXML private Pane chartServiceInventaire;
+    @FXML private Pane chartLocalInventaire;
+
+    private ObservableList<InventaireItem> inventaireItems = FXCollections.observableArrayList();
+
+    // Méthode pour initialiser la vue d'inventaire dans la méthode initialize()
+    private void initInventaireView() {
+        // Initialiser les colonnes du tableau d'inventaire
+        colRefArticleInventaire.setCellValueFactory(new PropertyValueFactory<>("refArticle"));
+        colNomArticleInventaire.setCellValueFactory(new PropertyValueFactory<>("nomArticle"));
+        colCategorieArticleInventaire.setCellValueFactory(new PropertyValueFactory<>("categorieArticle"));
+        colServiceInventaire.setCellValueFactory(new PropertyValueFactory<>("service"));
+        colLocalInventaire.setCellValueFactory(new PropertyValueFactory<>("local"));
+        colQuantiteInventaire.setCellValueFactory(new PropertyValueFactory<>("quantite"));
+        colDateAffectationInventaire.setCellValueFactory(new PropertyValueFactory<>("dateAffectation"));
+
+        // Format de date pour la colonne de date
+        colDateAffectationInventaire.setCellFactory(column -> new TableCell<InventaireItem, LocalDate>() {
+            @Override
+            protected void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                if (empty || date == null) {
+                    setText(null);
+                } else {
+                    setText(date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                }
+            }
+        });
+
+        // Charger les services dans le ComboBox
+        loadServicesIntoInventaireComboBox();
+
+        // Charger les locaux dans le ComboBox
+        loadLocauxIntoInventaireComboBox();
+
+        // Charger les catégories dans le ComboBox
+        loadCategoriesIntoInventaireComboBox();
+
+        // Initialiser le tableau avec les données d'inventaire
+        loadInventaireData();
+    }
+
+// Ajouter cette référence dans la map des pages dans switchPage()
+// Map<Button, AnchorPane> pageMap = Map.of(
+//     ...
+//     btnInventaire, pageInventaire
+// );
+
+    // Méthode pour charger les services dans le ComboBox d'inventaire
+    private void loadServicesIntoInventaireComboBox() {
+        try {
+            String sql = "SELECT * FROM service ORDER BY nom";
+
+            Connection conn = DB.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            ObservableList<Service> servicesList = FXCollections.observableArrayList();
+            // Ajouter une option "Tous les services"
+            servicesList.add(new Service(0, "Tous les services", "", "", ""));
+
+            while (rs.next()) {
+                Service service = new Service(
+                        rs.getInt("id"),
+                        rs.getString("nom"),
+                        rs.getString("type"),
+                        rs.getString("contact"),
+                        rs.getString("responsable")
+                );
+                servicesList.add(service);
+            }
+
+            comboServiceInventaire.setItems(servicesList);
+            comboServiceInventaire.getSelectionModel().selectFirst(); // Sélectionne "Tous les services"
+
+            // Définir comment afficher les services dans le ComboBox
+            comboServiceInventaire.setCellFactory(param -> new ListCell<Service>() {
+                @Override
+                protected void updateItem(Service item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getNom());
+                    }
+                }
+            });
+
+            comboServiceInventaire.setConverter(new StringConverter<Service>() {
+                @Override
+                public String toString(Service service) {
+                    if (service == null) {
+                        return null;
+                    }
+                    return service.getNom();
+                }
+
+                @Override
+                public Service fromString(String string) {
+                    return null; // Non utilisé
+                }
+            });
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des services: " + e.getMessage());
+        }
+    }
+
+    // Méthode pour charger les locaux dans le ComboBox d'inventaire
+    private void loadLocauxIntoInventaireComboBox() {
+        try {
+            String sql = "SELECT * FROM local ORDER BY nom";
+
+            Connection conn = DB.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            ObservableList<Local> locauxList = FXCollections.observableArrayList();
+            // Ajouter une option "Tous les locaux"
+            locauxList.add(new Local(0, "Tous les locaux", ""));
+
+            while (rs.next()) {
+                Local local = new Local(
+                        rs.getInt("id"),
+                        rs.getString("nom"),
+                        rs.getString("type")
+                );
+                locauxList.add(local);
+            }
+
+            comboLocalInventaire.setItems(locauxList);
+            comboLocalInventaire.getSelectionModel().selectFirst(); // Sélectionne "Tous les locaux"
+
+            // Définir comment afficher les locaux dans le ComboBox
+            comboLocalInventaire.setCellFactory(param -> new ListCell<Local>() {
+                @Override
+                protected void updateItem(Local item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getNom() + (item.getType().isEmpty() ? "" : " (" + item.getType() + ")"));
+                    }
+                }
+            });
+
+            comboLocalInventaire.setConverter(new StringConverter<Local>() {
+                @Override
+                public String toString(Local local) {
+                    if (local == null) {
+                        return null;
+                    }
+                    return local.getNom() + (local.getType().isEmpty() ? "" : " (" + local.getType() + ")");
+                }
+
+                @Override
+                public Local fromString(String string) {
+                    return null; // Non utilisé
+                }
+            });
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des locaux: " + e.getMessage());
+        }
+    }
+
+    // Méthode pour charger les catégories dans le ComboBox d'inventaire
+    private void loadCategoriesIntoInventaireComboBox() {
+        try {
+            String sql = "SELECT DISTINCT categorie FROM article ORDER BY categorie";
+
+            Connection conn = DB.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            ObservableList<String> categoriesList = FXCollections.observableArrayList();
+            // Ajouter une option "Toutes les catégories"
+            categoriesList.add("Toutes les catégories");
+
+            while (rs.next()) {
+                String categorie = rs.getString("categorie");
+                if (categorie != null && !categorie.isEmpty()) {
+                    categoriesList.add(categorie);
+                }
+            }
+
+            comboCategorieInventaire.setItems(categoriesList);
+            comboCategorieInventaire.getSelectionModel().selectFirst(); // Sélectionne "Toutes les catégories"
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des catégories: " + e.getMessage());
+        }
+    }
+
+    // Méthode pour charger les données d'inventaire
+    private void loadInventaireData() {
+        try {
+            // Base de la requête SQL
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.append("SELECT i.ref_article, a.nom AS nom_article, a.categorie, ");
+            sqlBuilder.append("s.nom AS nom_service, l.nom AS nom_local, i.quantite, i.date_affectation ");
+            sqlBuilder.append("FROM inventaire i ");
+            sqlBuilder.append("JOIN article a ON i.ref_article = a.reference ");
+            sqlBuilder.append("JOIN service s ON i.id_service = s.id ");
+            sqlBuilder.append("JOIN local l ON i.id_local = l.id ");
+
+            // Ajouter des conditions de filtrage si nécessaire
+            List<Object> parameters = new ArrayList<>();
+            boolean whereAdded = false;
+
+            if (comboServiceInventaire.getValue() != null && comboServiceInventaire.getValue().getIdservice() != 0) {
+                sqlBuilder.append(whereAdded ? " AND " : " WHERE ");
+                sqlBuilder.append("i.id_service = ?");
+                parameters.add(comboServiceInventaire.getValue().getIdservice());
+                whereAdded = true;
+            }
+
+            if (comboLocalInventaire.getValue() != null && comboLocalInventaire.getValue().getId() != 0) {
+                sqlBuilder.append(whereAdded ? " AND " : " WHERE ");
+                sqlBuilder.append("i.id_local = ?");
+                parameters.add(comboLocalInventaire.getValue().getId());
+                whereAdded = true;
+            }
+
+            if (comboCategorieInventaire.getValue() != null && !comboCategorieInventaire.getValue().equals("Toutes les catégories")) {
+                sqlBuilder.append(whereAdded ? " AND " : " WHERE ");
+                sqlBuilder.append("a.categorie = ?");
+                parameters.add(comboCategorieInventaire.getValue());
+                whereAdded = true;
+            }
+
+            String rechercheText = rechercheArticleInventaire.getText().trim();
+            if (!rechercheText.isEmpty()) {
+                sqlBuilder.append(whereAdded ? " AND " : " WHERE ");
+                sqlBuilder.append("a.nom LIKE ?");
+                parameters.add("%" + rechercheText + "%");
+                whereAdded = true;
+            }
+
+            // Ordre
+            sqlBuilder.append(" ORDER BY s.nom, l.nom, a.nom");
+
+            // Exécuter la requête
+            Connection conn = DB.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString());
+
+            // Définir les paramètres
+            for (int i = 0; i < parameters.size(); i++) {
+                pstmt.setObject(i + 1, parameters.get(i));
+            }
+
+            ResultSet rs = pstmt.executeQuery();
+
+            ObservableList<InventaireItem> items = FXCollections.observableArrayList();
+
+            while (rs.next()) {
+                InventaireItem item = new InventaireItem(
+                        rs.getInt("ref_article"),
+                        rs.getString("nom_article"),
+                        rs.getString("categorie"),
+                        rs.getString("nom_service"),
+                        rs.getString("nom_local"),
+                        rs.getInt("quantite"),
+                        rs.getDate("date_affectation") != null ? rs.getDate("date_affectation").toLocalDate() : null
+                );
+                items.add(item);
+            }
+
+            tableInventaire.setItems(items);
+            inventaireItems = items;
+
+            // Mettre à jour le compteur total
+            totalItemsInventaire.setText("Total: " + items.size() + " articles");
+
+            rs.close();
+            pstmt.close();
+            conn.close();
+
+            // Mettre à jour les graphiques statistiques
+            updateInventaireCharts();
+
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des données d'inventaire: " + e.getMessage());
+        }
+    }
+
+    // Mise à jour des graphiques de l'inventaire
+    private void updateInventaireCharts() {
+        // Cette partie serait implémentée avec JavaFX Charts (PieChart, BarChart, etc.)
+        // Mais nécessite des dépendances et du code supplémentaire pour la visualisation
+        // Je fournis ici le squelette de la méthode que vous pourrez compléter
+    }
+
+    // Méthode pour la recherche d'inventaire par article
+    @FXML
+    private void rechercherInventaireParArticle(KeyEvent event) {
+        loadInventaireData();
+    }
+
+    // Méthode pour rechercher dans l'inventaire
+    @FXML
+    private void rechercherInventaire() {
+        loadInventaireData();
+    }
+
+    // Méthode pour réinitialiser les filtres d'inventaire
+    @FXML
+    private void resetInventaire() {
+        comboServiceInventaire.getSelectionModel().selectFirst();
+        comboLocalInventaire.getSelectionModel().selectFirst();
+        comboCategorieInventaire.getSelectionModel().selectFirst();
+        rechercheArticleInventaire.clear();
+        loadInventaireData();
+    }
+
+    // Méthode pour exporter l'inventaire en PDF
+    @FXML
+    private void exporterInventairePDF() {
+        try {
+            // Create a file chooser to select the save location
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Enregistrer le rapport d'inventaire");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+            fileChooser.setInitialFileName("Inventaire_" +
+                    LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".pdf");
+            File file = fileChooser.showSaveDialog(null);
+
+            if (file == null) {
+                return; // User canceled the file chooser
+            }
+
+            // Initialize PDF writer and document
+            PdfWriter writer = new PdfWriter(file);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf, PageSize.A4.rotate()); // Landscape format
+            document.setMargins(20, 20, 20, 20);
+
+            // Add title
+            document.add(new Paragraph("Rapport d'Inventaire")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(20)
+                    .setBold()
+                    .setMarginBottom(20));
+
+            // Add report date
+            document.add(new Paragraph("Date du rapport: " +
+                    LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setFontSize(12)
+                    .setMarginBottom(10));
+
+            // Add filter information table
+            Table infoTable = new Table(new float[]{1, 3});
+            infoTable.setWidth(UnitValue.createPercentValue(100));
+            infoTable.addCell(new Cell().add(new Paragraph("Service:")).setBold());
+            infoTable.addCell(new Cell().add(new Paragraph(comboServiceInventaire.getValue() != null ?
+                    comboServiceInventaire.getValue().getNom() : "Tous les services")));
+            infoTable.addCell(new Cell().add(new Paragraph("Local:")).setBold());
+            infoTable.addCell(new Cell().add(new Paragraph(comboLocalInventaire.getValue() != null ?
+                    comboLocalInventaire.getValue().getNom() : "Tous les locaux")));
+            infoTable.addCell(new Cell().add(new Paragraph("Catégorie:")).setBold());
+            infoTable.addCell(new Cell().add(new Paragraph(comboCategorieInventaire.getValue() != null ?
+                    comboCategorieInventaire.getValue() : "Toutes les catégories")));
+
+            String rechercheText = rechercheArticleInventaire.getText().trim();
+            if (!rechercheText.isEmpty()) {
+                infoTable.addCell(new Cell().add(new Paragraph("Recherche:")).setBold());
+                infoTable.addCell(new Cell().add(new Paragraph(rechercheText)));
+            }
+
+            document.add(infoTable);
+            document.add(new Paragraph("\n"));
+
+            // Create inventory data table
+            Table table = new Table(new float[]{1, 3, 2, 2, 2, 1, 2});
+            table.setWidth(UnitValue.createPercentValue(100));
+
+            // Add table headers
+            String[] headers = {"Référence", "Article", "Catégorie", "Service", "Local", "Quantité", "Date d'affectation"};
+            for (String header : headers) {
+                table.addHeaderCell(new Cell()
+                        .add(new Paragraph(header))
+                        .setBold()
+                        .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                        .setTextAlignment(TextAlignment.CENTER));
+            }
+
+            // Add data rows
+            int total = 0;
+            for (InventaireItem item : inventaireItems) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.valueOf(item.getRefArticle())))
+                        .setTextAlignment(TextAlignment.CENTER));
+                table.addCell(new Cell().add(new Paragraph(item.getNomArticle())));
+                table.addCell(new Cell().add(new Paragraph(item.getCategorieArticle())));
+                table.addCell(new Cell().add(new Paragraph(item.getService())));
+                table.addCell(new Cell().add(new Paragraph(item.getLocal())));
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.valueOf(item.getQuantite())))
+                        .setTextAlignment(TextAlignment.CENTER));
+                String dateStr = item.getDateAffectation() != null ?
+                        item.getDateAffectation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+                table.addCell(new Cell()
+                        .add(new Paragraph(dateStr))
+                        .setTextAlignment(TextAlignment.CENTER));
+                total += item.getQuantite();
+            }
+
+            document.add(table);
+
+            // Add total
+            document.add(new Paragraph("Total des articles: " + total)
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setFontSize(12)
+                    .setBold()
+                    .setMarginTop(10));
+
+            // Add footer
+            document.add(new Paragraph("Document généré automatiquement par le système de gestion de stock")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(8)
+                    .setMarginTop(20));
+
+            // Close the document
+            document.close();
+            writer.close();
+
+            // Show success message
+            showMsg(Alert.AlertType.INFORMATION, "Export PDF",
+                    "Le rapport d'inventaire a été exporté avec succès vers:\n" + file.getAbsolutePath());
+
+            // Open the PDF with the default application
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(file);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showMsg(Alert.AlertType.ERROR, "Erreur",
+                    "Erreur lors de l'exportation du PDF: " + e.getMessage());
+        }
+    }
+
+
+    // Méthode pour exporter l'inventaire en Excel
+    @FXML
+    private void exporterInventaireExcel() {
+        // Cette méthode nécessite des bibliothèques pour la génération d'Excel comme Apache POI
+        showMsg(Alert.AlertType.INFORMATION, "Export Excel", "Fonctionnalité d'export Excel à implémenter.");
+    }
+
+    // Méthode pour mettre à jour l'inventaire lors de la validation d'une commande interne
+// À appeler depuis validateCommandeInterne après la mise à jour du stock
+    private void updateInventaireFromCommandeInterne(int idCommande) {
+        try {
+            Connection conn = DB.getConnection();
+            conn.setAutoCommit(false);
+
+            try {
+                // 1. Récupérer toutes les lignes de la commande
+                String getLignesSql = "SELECT lci.*, ci.id_service, a.nom AS nom_article, a.categorie " +
+                        "FROM ligne_commande_interne lci " +
+                        "JOIN commande_interne ci ON lci.id_commande = ci.id_commande " +
+                        "JOIN article a ON lci.ref_article = a.reference " +
+                        "WHERE lci.id_commande = ?";
+
+                PreparedStatement getLignesStmt = conn.prepareStatement(getLignesSql);
+                getLignesStmt.setInt(1, idCommande);
+                ResultSet lignesRs = getLignesStmt.executeQuery();
+
+                // 2. Pour chaque ligne, mettre à jour ou créer une entrée d'inventaire
+                String checkInventaireSql = "SELECT id FROM inventaire WHERE ref_article = ? AND id_service = ? AND id_local = ?";
+                PreparedStatement checkInventaireStmt = conn.prepareStatement(checkInventaireSql);
+
+                String updateInventaireSql = "UPDATE inventaire SET quantite = quantite + ? WHERE id = ?";
+                PreparedStatement updateInventaireStmt = conn.prepareStatement(updateInventaireSql);
+
+                String insertInventaireSql = "INSERT INTO inventaire (ref_article, id_service, id_local, quantite, date_affectation) " +
+                        "VALUES (?, ?, ?, ?, ?)";
+                PreparedStatement insertInventaireStmt = conn.prepareStatement(insertInventaireSql);
+
+                String getLocalIdSql = "SELECT id FROM local WHERE nom = ?";
+                PreparedStatement getLocalIdStmt = conn.prepareStatement(getLocalIdSql);
+
+                while (lignesRs.next()) {
+                    int refArticle = lignesRs.getInt("ref_article");
+                    int idService = lignesRs.getInt("id_service");
+                    String localSource = lignesRs.getString("local_source");
+                    int quantite = lignesRs.getInt("quantite");
+
+                    // Récupérer l'ID du local source
+                    getLocalIdStmt.setString(1, localSource);
+                    ResultSet localRs = getLocalIdStmt.executeQuery();
+
+                    if (localRs.next()) {
+                        int idLocal = localRs.getInt("id");
+
+                        // Vérifier si une entrée d'inventaire existe déjà
+                        checkInventaireStmt.setInt(1, refArticle);
+                        checkInventaireStmt.setInt(2, idService);
+                        checkInventaireStmt.setInt(3, idLocal);
+                        ResultSet inventaireRs = checkInventaireStmt.executeQuery();
+
+                        if (inventaireRs.next()) {
+                            // Mettre à jour l'entrée existante
+                            int idInventaire = inventaireRs.getInt("id");
+                            updateInventaireStmt.setInt(1, quantite);
+                            updateInventaireStmt.setInt(2, idInventaire);
+                            updateInventaireStmt.executeUpdate();
+                        } else {
+                            // Créer une nouvelle entrée
+                            insertInventaireStmt.setInt(1, refArticle);
+                            insertInventaireStmt.setInt(2, idService);
+                            insertInventaireStmt.setInt(3, idLocal);
+                            insertInventaireStmt.setInt(4, quantite);
+                            insertInventaireStmt.setDate(5, Date.valueOf(LocalDate.now()));
+                            insertInventaireStmt.executeUpdate();
+                        }
+
+                        inventaireRs.close();
+                    }
+
+                    localRs.close();
+                }
+
+                // Fermer les ressources
+                lignesRs.close();
+                getLignesStmt.close();
+                checkInventaireStmt.close();
+                updateInventaireStmt.close();
+                insertInventaireStmt.close();
+                getLocalIdStmt.close();
+
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+                conn.close();
+            }
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la mise à jour de l'inventaire: " + e.getMessage());
+        }
+    }
+
+// Modifier la méthode validateCommandeInterne pour inclure la mise à jour de l'inventaire
+// À la fin de la méthode validateCommandeInterne, après avoir validé la commande, ajouter:
+// updateInventaireFromCommandeInterne(selectedCommandeInterne.getIdCommande());
+@FXML
+private void exporterCommandesInternesPDF() {
+    try {
+        // Reload data to ensure the list is populated
+        loadCommandesInternes();
+
+        // Get data from TableView
+        ObservableList<CommandeInterne> data = tableCommandeInterne.getItems();
+
+        // Check if data is empty
+        if (data.isEmpty()) {
+            showMsg(Alert.AlertType.WARNING, "Aucune Donnée", "Aucune commande interne à exporter. Veuillez vérifier les données.");
+            return;
+        }
+
+        // Create a file chooser to select the save location
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Enregistrer le rapport des commandes internes");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+        fileChooser.setInitialFileName("CommandesInternes_" +
+                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".pdf");
+        File file = fileChooser.showSaveDialog(null);
+
+        if (file == null) {
+            return; // User canceled the file chooser
+        }
+
+        // Initialize PDF writer and document
+        PdfWriter writer = new PdfWriter(file);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf, PageSize.A4.rotate()); // Landscape format
+        document.setMargins(20, 20, 20, 20);
+
+        // Add title
+        document.add(new Paragraph("Rapport des Commandes Internes")
+                .setTextAlignment(TextAlignment.CENTER)
+                .setFontSize(20)
+                .setBold()
+                .setMarginBottom(20));
+
+        // Add report date
+        document.add(new Paragraph("Date du rapport: " +
+                LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .setTextAlignment(TextAlignment.RIGHT)
+                .setFontSize(12)
+                .setMarginBottom(10));
+
+        // Add filter information table
+        Table infoTable = new Table(new float[]{1, 3});
+        infoTable.setWidth(UnitValue.createPercentValue(100));
+        infoTable.addCell(new Cell().add(new Paragraph("Service:")).setBold());
+        infoTable.addCell(new Cell().add(new Paragraph(comboServiceCommandeInterne.getValue() != null ?
+                comboServiceCommandeInterne.getValue().getNom() : "Tous les services")));
+
+        document.add(infoTable);
+        document.add(new Paragraph("\n"));
+
+        // Create commands data table
+        Table table = new Table(new float[]{1, 3, 2, 2, 3});
+        table.setWidth(UnitValue.createPercentValue(100));
+
+        // Add table headers
+        String[] headers = {"ID Commande", "Service", "Date Commande", "Statut", "Description"};
+        for (String header : headers) {
+            table.addHeaderCell(new Cell()
+                    .add(new Paragraph(header))
+                    .setBold()
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setTextAlignment(TextAlignment.CENTER));
+        }
+
+        // Add data rows
+        for (CommandeInterne item : data) {
+            table.addCell(new Cell()
+                    .add(new Paragraph(String.valueOf(item.getIdCommande())))
+                    .setTextAlignment(TextAlignment.CENTER));
+            table.addCell(new Cell().add(new Paragraph(item.getNomService() != null ? item.getNomService() : "")));
+            String dateStr = item.getDateCommande() != null ?
+                    item.getDateCommande().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+            table.addCell(new Cell()
+                    .add(new Paragraph(dateStr))
+                    .setTextAlignment(TextAlignment.CENTER));
+            table.addCell(new Cell().add(new Paragraph(item.getStatut() != null ? item.getStatut() : "")));
+            table.addCell(new Cell().add(new Paragraph(item.getDescription() != null ? item.getDescription() : "")));
+        }
+
+        document.add(table);
+
+        // Add total
+        document.add(new Paragraph("Total des commandes: " + data.size())
+                .setTextAlignment(TextAlignment.RIGHT)
+                .setFontSize(12)
+                .setBold()
+                .setMarginTop(10));
+
+        // Add footer
+        document.add(new Paragraph("Document généré automatiquement par le système de gestion de stock")
+                .setTextAlignment(TextAlignment.CENTER)
+                .setFontSize(8)
+                .setMarginTop(20));
+
+        // Close the document
+        document.close();
+        writer.close();
+
+        // Show success message
+        showMsg(Alert.AlertType.INFORMATION, "Export PDF",
+                "Le rapport des commandes internes a été exporté avec succès vers:\n" + file.getAbsolutePath());
+
+        // Open the PDF with the default application
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().open(file);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        showMsg(Alert.AlertType.ERROR, "Erreur",
+                "Erreur lors de l'exportation du PDF: " + e.getMessage());
+    }
+}
+@FXML
+
+private void exporterCommandesExternesPDF() {
+    try {
+        // Reload data to ensure the list is populated
+        loadCommandesExternes();
+
+        // Get data from TableView
+        ObservableList<CommandeExterne> data = tableCommandeExterne.getItems();
+
+        // Check if data is empty
+        if (data.isEmpty()) {
+            showMsg(Alert.AlertType.WARNING, "Aucune Donnée", "Aucune commande externe à exporter. Veuillez vérifier les données.");
+            return;
+        }
+
+        // Create a file chooser to select the save location
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Enregistrer le rapport des commandes externes");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+        fileChooser.setInitialFileName("CommandesExternes_" +
+                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".pdf");
+        File file = fileChooser.showSaveDialog(null);
+
+        if (file == null) {
+            return; // User canceled the file chooser
+        }
+
+        // Initialize PDF writer and document
+        PdfWriter writer = new PdfWriter(file);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf, PageSize.A4.rotate()); // Landscape format
+        document.setMargins(20, 20, 20, 20);
+
+        // Add title
+        document.add(new Paragraph("Rapport des Commandes Externes")
+                .setTextAlignment(TextAlignment.CENTER)
+                .setFontSize(20)
+                .setBold()
+                .setMarginBottom(20));
+
+        // Add report date
+        document.add(new Paragraph("Date du rapport: " +
+                LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .setTextAlignment(TextAlignment.RIGHT)
+                .setFontSize(12)
+                .setMarginBottom(10));
+
+        // Add filter information table
+        Table infoTable = new Table(new float[]{1, 3});
+        infoTable.setWidth(UnitValue.createPercentValue(100));
+        infoTable.addCell(new Cell().add(new Paragraph("Fournisseur:")).setBold());
+        infoTable.addCell(new Cell().add(new Paragraph(comboFournisseurCommandeExterne.getValue() != null ?
+                comboFournisseurCommandeExterne.getValue().getNom() : "Tous les fournisseurs")));
+
+        document.add(infoTable);
+        document.add(new Paragraph("\n"));
+
+        // Create commands data table
+        Table table = new Table(new float[]{1, 3, 2, 2, 3});
+        table.setWidth(UnitValue.createPercentValue(100));
+
+        // Add table headers
+        String[] headers = {"ID Commande", "Fournisseur", "Date Commande", "Statut", "Description"};
+        for (String header : headers) {
+            table.addHeaderCell(new Cell()
+                    .add(new Paragraph(header))
+                    .setBold()
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setTextAlignment(TextAlignment.CENTER));
+        }
+
+        // Add data rows
+        for (CommandeExterne item : data) {
+            table.addCell(new Cell()
+                    .add(new Paragraph(String.valueOf(item.getIdCommande())))
+                    .setTextAlignment(TextAlignment.CENTER));
+            table.addCell(new Cell().add(new Paragraph(item.getNomFournisseur() != null ? item.getNomFournisseur() : "")));
+            String dateStr = item.getDateCommande() != null ?
+                    item.getDateCommande().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+            table.addCell(new Cell()
+                    .add(new Paragraph(dateStr))
+                    .setTextAlignment(TextAlignment.CENTER));
+            table.addCell(new Cell().add(new Paragraph(item.getStatut() != null ? item.getStatut() : "")));
+            table.addCell(new Cell().add(new Paragraph(item.getDescription() != null ? item.getDescription() : "")));
+        }
+
+        document.add(table);
+
+        // Add total
+        document.add(new Paragraph("Total des commandes: " + data.size())
+                .setTextAlignment(TextAlignment.RIGHT)
+                .setFontSize(12)
+                .setBold()
+                .setMarginTop(10));
+
+        // Add footer
+        document.add(new Paragraph("Document généré automatiquement par le système de gestion de stock")
+                .setTextAlignment(TextAlignment.CENTER)
+                .setFontSize(8)
+                .setMarginTop(20));
+
+        // Close the document
+        document.close();
+        writer.close();
+
+        // Show success message
+        showMsg(Alert.AlertType.INFORMATION, "Export PDF",
+                "Le rapport des commandes externes a été exporté avec succès vers:\n" + file.getAbsolutePath());
+
+        // Open the PDF with the default application
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().open(file);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        showMsg(Alert.AlertType.ERROR, "Erreur",
+                "Erreur lors de l'exportation du PDF: " + e.getMessage());
+    }
+}
 
 }
+
+
+
