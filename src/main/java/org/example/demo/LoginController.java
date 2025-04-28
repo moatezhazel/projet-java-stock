@@ -49,6 +49,7 @@ public class LoginController {
 
                 Stage stage = new Stage();
                 stage.setScene(new Scene(root));
+                stage.setFullScreen(false);
                 stage.setTitle("Gestion de Stock - Application Principale");
                 stage.show();
             } catch (IOException e) {

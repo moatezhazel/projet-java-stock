@@ -16,6 +16,7 @@ public class App extends Application {
         stage.setTitle("Application de gestion de stock");
         stage.setScene(scene);
         stage.show();
+
     }
 
     public static void main(String[] args) {

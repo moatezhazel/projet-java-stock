@@ -1,6 +1,7 @@
 
 //8888888888888888
 package org.example.demo;
+
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -15,6 +16,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.LocalDate;
 import java.io.File;
 import java.awt.Desktop;
+
+import javafx.scene.chart.*;
 import javafx.stage.FileChooser;
 //8888888888
 import javafx.event.ActionEvent;
@@ -63,6 +66,11 @@ public class AppController implements Initializable {
     private ObservableList<LigneCommandeExterne> lignesCommandeExterneList = FXCollections.observableArrayList();
     private ObservableList<LigneCommandeInterne> lignesCommandeInterneList = FXCollections.observableArrayList();
     //ffff
+    @FXML private AnchorPane pageStatistiques;
+    @FXML private Button btnStatistiques;
+    @FXML private Pane chartArticlesParCategorie;
+    @FXML private Pane chartStockParLocal;
+    @FXML private Pane chartCommandesParFournisseur;
     @FXML
     private TableView<CommandeExterne> tableCommandeExterne;
     @FXML
@@ -273,7 +281,7 @@ public class AppController implements Initializable {
         });
     }
     //mmmmmm
-    
+
 
 
 
@@ -281,9 +289,6 @@ public class AppController implements Initializable {
     private void switchPage(ActionEvent event) {
         Button clickedButton = (Button) event.getSource();
 
-        // Liste de toutes les pages avec leur bouton correspondant
-        // Impossible d'utiliser Map.of() car il est limité à 10 paires clé-valeur
-        // Utilisons une méthode alternative pour créer la map
         Map<Button, AnchorPane> pageMap = new HashMap<>();
         pageMap.put(btnGestionnaireArticle, pageGestionnaireArticle);
         pageMap.put(btnGestionnaireLocal, pageGestionnaireLocal);
@@ -291,25 +296,139 @@ public class AppController implements Initializable {
         pageMap.put(btngS, panedeService);
         pageMap.put(btnCommandeExterne, pageCommandeExterne);
         pageMap.put(btnCommandeInterne, pageCommandeInterne);
-        pageMap.put(btnInventaire, pageInventaire); // Ajout de la page d'inventaire
+        pageMap.put(btnInventaire, pageInventaire);
+        pageMap.put(btnStatistiques, pageStatistiques);
 
-        // Cacher toutes les pages
         pageMap.values().forEach(page -> page.setVisible(false));
 
-        // Afficher la page sélectionnée
         AnchorPane selectedPage = pageMap.get(clickedButton);
         if (selectedPage != null) {
             selectedPage.setVisible(true);
 
-            // Chargements spécifiques pour les pages
             if (clickedButton == btnCommandeExterne) {
                 loadCommandesExternes();
             } else if (clickedButton == btnCommandeInterne) {
                 loadCommandesInternes();
             } else if (clickedButton == btnInventaire) {
-                // Charger les données d'inventaire quand cette page est sélectionnée
                 loadInventaireData();
+            } else if (clickedButton == btnStatistiques) {
+                initStatistiquesView();
             }
+        }
+    }
+    // Initialisation de la vue des statistiques
+    private void initStatistiquesView() {
+        loadArticlesParCategorieChart();
+        loadStockParLocalChart();
+        loadCommandesParFournisseurChart();
+    }
+
+    // Graphique des articles par catégorie (PieChart)
+    private void loadArticlesParCategorieChart() {
+        try {
+            String sql = "SELECT categorie, COUNT(*) as count FROM article GROUP BY categorie";
+            Connection conn = DB.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+            while (rs.next()) {
+                String categorie = rs.getString("categorie");
+                int count = rs.getInt("count");
+                pieChartData.add(new PieChart.Data(categorie, count));
+            }
+
+            PieChart pieChart = new PieChart(pieChartData);
+            pieChart.setTitle("Répartition des articles par catégorie");
+            pieChart.setPrefSize(600, 300);
+
+            chartArticlesParCategorie.getChildren().clear();
+            chartArticlesParCategorie.getChildren().add(pieChart);
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des données: " + e.getMessage());
+        }
+    }
+
+    // Graphique du stock par local (BarChart)
+    private void loadStockParLocalChart() {
+        try {
+            String sql = "SELECT local, SUM(qte) as total FROM article GROUP BY local";
+            Connection conn = DB.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            CategoryAxis xAxis = new CategoryAxis();
+            NumberAxis yAxis = new NumberAxis();
+            BarChart<String, Number> barChart = new BarChart<>(xAxis, yAxis);
+            barChart.setTitle("Stock par local");
+            xAxis.setLabel("Local");
+            yAxis.setLabel("Quantité");
+
+            XYChart.Series<String, Number> series = new XYChart.Series<>();
+            series.setName("Quantité de stock");
+
+            while (rs.next()) {
+                String local = rs.getString("local");
+                int total = rs.getInt("total");
+                series.getData().add(new XYChart.Data<>(local, total));
+            }
+
+            barChart.getData().add(series);
+            barChart.setPrefSize(600, 300);
+
+            chartStockParLocal.getChildren().clear();
+            chartStockParLocal.getChildren().add(barChart);
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des données: " + e.getMessage());
+        }
+    }
+
+    // Graphique des commandes externes par fournisseur (BarChart)
+    private void loadCommandesParFournisseurChart() {
+        try {
+            String sql = "SELECT f.nom, COUNT(ce.id_commande) as count " +
+                    "FROM commande_externe ce " +
+                    "JOIN fournisseur f ON ce.id_fournisseur = f.id_fournisseur " +
+                    "GROUP BY f.nom";
+            Connection conn = DB.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            CategoryAxis xAxis = new CategoryAxis();
+            NumberAxis yAxis = new NumberAxis();
+            BarChart<String, Number> barChart = new BarChart<>(xAxis, yAxis);
+            barChart.setTitle("Commandes externes par fournisseur");
+            xAxis.setLabel("Fournisseur");
+            yAxis.setLabel("Nombre de commandes");
+
+            XYChart.Series<String, Number> series = new XYChart.Series<>();
+            series.setName("Nombre de commandes");
+
+            while (rs.next()) {
+                String fournisseur = rs.getString("nom");
+                int count = rs.getInt("count");
+                series.getData().add(new XYChart.Data<>(fournisseur, count));
+            }
+
+            barChart.getData().add(series);
+            barChart.setPrefSize(600, 300);
+
+            chartCommandesParFournisseur.getChildren().clear();
+            chartCommandesParFournisseur.getChildren().add(barChart);
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            showMsg(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des données: " + e.getMessage());
         }
     }
     private void loadCommandesInternes() {
@@ -658,6 +777,7 @@ public class AppController implements Initializable {
         loadFournisseurFromDB();
         initialiseTypeService();
         loadServiceFromDB();
+        initStatistiquesView();
 
 
 
@@ -1483,6 +1603,8 @@ public class AppController implements Initializable {
                 showMsg(Alert.AlertType.INFORMATION, "Information", "ligne ajoute avec succee");
             else showMsg(Alert.AlertType.ERROR, "Erreur", "erreur lors d'ajout de ligne!");
             loadArticlesFromDB();
+            loadCategoriesIntoInventaireComboBox();
+            loadArticlesIntoComboBox();
         } catch (SQLException e) {
             showMsg(Alert.AlertType.ERROR ,"erreur", "erreur de connexion a base de donnee");
         } catch (NumberFormatException e) {
@@ -1506,6 +1628,8 @@ public class AppController implements Initializable {
                 showMsg(Alert.AlertType.INFORMATION, "Information", "ligne supprime avec succee");
             else showMsg(Alert.AlertType.ERROR, "Erreur", "ligne n'est pas supprimer!");
             loadArticlesFromDB();
+            loadCategoriesIntoInventaireComboBox();
+            loadArticlesIntoComboBox();
         } catch (SQLException e) {
             showMsg(Alert.AlertType.ERROR, "Erreur", "erreur connexion BD");
         }
@@ -1625,6 +1749,8 @@ public class AppController implements Initializable {
             if (updatedRows == 1) {
                 showMsg(Alert.AlertType.INFORMATION, "Succès", "Article modifié avec succès!");
                 loadArticlesFromDB();
+                loadCategoriesIntoInventaireComboBox();
+                loadArticlesIntoComboBox();
                 clearFormFields();
             } else
                 showMsg(Alert.AlertType.ERROR, "Erreur", "Échec de la modification de l'article!");
@@ -1814,6 +1940,8 @@ public class AppController implements Initializable {
                 showMsg(Alert.AlertType.INFORMATION, "Information", "ligne ajoute avec succee");
             else showMsg(Alert.AlertType.ERROR, "Erreur", "erreur lors d'ajout de ligne!");
             loadLocalFromDB();
+            loadLocauxIntoComboBox();
+            loadLocauxIntoInventaireComboBox();
         } catch (SQLException e) {
             showMsg(Alert.AlertType.ERROR ,"erreur", "erreur de connexion a base de donnee");
         } catch (NumberFormatException e) {
@@ -1837,6 +1965,8 @@ public class AppController implements Initializable {
             else showMsg(Alert.AlertType.ERROR, "Erreur", "ligne n'est pas supprimer!");
             localArticle.getItems().remove(a.getNom());
             loadLocalFromDB();
+            loadLocauxIntoComboBox();
+            loadLocauxIntoInventaireComboBox();
         } catch (SQLException e) {
             showMsg(Alert.AlertType.ERROR, "Erreur", "erreur connexion BD");
         }
@@ -1864,6 +1994,8 @@ public class AppController implements Initializable {
             if (updatedRows == 1) {
                 showMsg(Alert.AlertType.INFORMATION, "Succès", "Local modifié avec succès!");
                 loadLocalFromDB();
+                loadLocauxIntoComboBox();
+                loadLocauxIntoInventaireComboBox();
                 clearFormFields();
             } else
                 showMsg(Alert.AlertType.ERROR, "Erreur", "Échec de la modification de local!");
@@ -1980,6 +2112,7 @@ public class AppController implements Initializable {
                 showMsg(Alert.AlertType.INFORMATION, "Information", "ligne ajoute avec succee");
             else showMsg(Alert.AlertType.ERROR, "Erreur", "erreur lors d'ajout de ligne!");
             loadFournisseurFromDB();
+            loadFournisseursIntoComboBox();
         } catch (SQLException e) {
             showMsg(Alert.AlertType.ERROR ,"erreur", "erreur de connexion a base de donnee");
         } catch (NumberFormatException e) {
@@ -2026,6 +2159,7 @@ public class AppController implements Initializable {
             if (updatedRows == 1) {
                 showMsg(Alert.AlertType.INFORMATION, "Succès", "Fournisseur modifié avec succès!");
                 loadFournisseurFromDB();
+                loadFournisseursIntoComboBox();
                 clearFormFields();
             } else
                 showMsg(Alert.AlertType.ERROR, "Erreur", "Échec de la modification du fournisseur!");
@@ -2132,6 +2266,7 @@ public class AppController implements Initializable {
                 showMsg(Alert.AlertType.INFORMATION, "Information", "ligne supprime avec succee");
             else showMsg(Alert.AlertType.ERROR, "Erreur", "ligne n'est pas supprimer!");
             loadFournisseurFromDB();
+            loadFournisseursIntoComboBox();
         } catch (SQLException e) {
             showMsg(Alert.AlertType.ERROR, "Erreur", "erreur connexion BD");
         }
@@ -2162,6 +2297,8 @@ public class AppController implements Initializable {
                 showMsg(Alert.AlertType.INFORMATION, "Information", "ligne ajoute avec succee");
             else showMsg(Alert.AlertType.ERROR, "Erreur", "erreur lors d'ajout de ligne!");
             loadServiceFromDB();
+            loadServicesIntoComboBox();
+            loadServicesIntoInventaireComboBox();
         } catch (SQLException e) {
             showMsg(Alert.AlertType.ERROR ,"erreur", "erreur de connexion a base de donnee");
         }
@@ -2208,6 +2345,8 @@ public class AppController implements Initializable {
             if (updatedRows == 1) {
                 showMsg(Alert.AlertType.INFORMATION, "Succès", "Service modifié avec succès!");
                 loadServiceFromDB();
+                loadServicesIntoComboBox();
+                loadServicesIntoInventaireComboBox();
                 clearFormFields();
             } else
                 showMsg(Alert.AlertType.ERROR, "Erreur", "Échec de la modification de service!");
@@ -2272,6 +2411,8 @@ public class AppController implements Initializable {
                 showMsg(Alert.AlertType.INFORMATION, "Information", "ligne supprime avec succee");
             else showMsg(Alert.AlertType.ERROR, "Erreur", "ligne n'est pas supprimer!");
             loadServiceFromDB();
+            loadServicesIntoComboBox();
+            loadServicesIntoInventaireComboBox();
         } catch (SQLException e) {
             showMsg(Alert.AlertType.ERROR, "Erreur", "erreur connexion BD");
         }
